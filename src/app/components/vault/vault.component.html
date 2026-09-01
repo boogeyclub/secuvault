@@ -1,0 +1,102 @@
+<GridLayout rows="auto,auto,*" class="page">
+
+  <!-- Header -->
+  <StackLayout row="0" class="vault-header">
+    <GridLayout rows="auto" columns="*,auto">
+      <Label col="0" text="SecuVault" class="h2 title-accent"></Label>
+      <Label col="1" text="🔒" class="header-icon" (tap)="lockNow()"></Label>
+    </GridLayout>
+    <Label [text]="entries().length + ' item' + (entries().length === 1 ? '' : 's') + '  ·  ' + bytesLabel()" class="body muted"></Label>
+
+    <GridLayout rows="auto" columns="*,auto,auto" class="action-row">
+      <Button col="0" text="＋ Add files" class="btn btn-primary btn-sm" (tap)="addFiles()"></Button>
+      <Button col="1" [text]="gridView() ? '☰' : '⊞'" class="btn btn-ghost btn-sm" (tap)="gridView.set(!gridView())"></Button>
+      <Button col="2" text="⚙" class="btn btn-ghost btn-sm" (tap)="openSettings()"></Button>
+    </GridLayout>
+  </StackLayout>
+
+  <!-- Selection bar -->
+  @if (selectionMode()) {
+    <GridLayout row="1" rows="auto" columns="auto,*,auto,auto" class="selection-bar">
+      <Label col="0" text="✕" class="sel-btn" (tap)="clearSelection()"></Label>
+      <Label col="1" [text]="selectedCount() + ' selected'" class="sel-count"></Label>
+      <Label col="2" text="↥ Restore" class="sel-btn" (tap)="restoreSelected()"></Label>
+      <Label col="3" text="🗑 Delete" class="sel-btn sel-danger" (tap)="deleteSelected()"></Label>
+    </GridLayout>
+  }
+
+  <!-- Banner -->
+  @if (banner()) {
+    <GridLayout row="1" rows="auto" class="banner" [class.banner-err]="banner().kind === 'err'">
+      <Label [text]="banner().text" class="banner-text" textWrap="true"></Label>
+    </GridLayout>
+  }
+
+  <!-- Import progress -->
+  @if (progress()) {
+    <StackLayout row="1" class="card progress-card">
+      <Label [text]="'Importing: ' + progress().current" class="body" textWrap="false"></Label>
+      <GridLayout rows="auto" columns="*,auto" marginTop="8">
+        <GridLayout col="0" class="progress-track">
+          <GridLayout [width]="percent() + '%'" class="progress-fill" horizontalAlignment="left"></GridLayout>
+        </GridLayout>
+        <Label col="1" [text]="percent() + '%'" class="body muted" marginLeft="10"></Label>
+      </GridLayout>
+    </StackLayout>
+  }
+
+  <!-- Content -->
+  <GridLayout row="2">
+    @if (entries().length === 0) {
+      <StackLayout class="center">
+        <Label text="🗄" class="empty-glyph"></Label>
+        <Label text="Your vault is empty" class="h3"></Label>
+        <Label text="Files you add here are moved out of sight into private, app-only storage." class="body muted center" textWrap="true" marginTop="6"></Label>
+        <Button text="Add your first files" class="btn btn-primary" marginTop="20" (tap)="addFiles()"></Button>
+      </StackLayout>
+    }
+
+    @if (entries().length > 0 && !gridView()) {
+      <ScrollView>
+        <StackLayout class="p-md">
+          @for (e of entries(); track e.id) {
+            <GridLayout rows="auto" columns="auto,*,auto" class="file-item" [class.selected-item]="isSelected(e.id)" (tap)="openEntry(e)" (longPress)="onLongPress(e)">
+              <GridLayout col="0" class="type-badge">
+                @if (e.category === 'image' && thumbOf(e)) {
+                  <Image [src]="thumbOf(e)" stretch="aspectFill" class="thumb-img"></Image>
+                } @else {
+                  <Label [text]="codeOf(e)" class="badge-text"></Label>
+                }
+              </GridLayout>
+              <StackLayout col="1" class="file-info">
+                <Label [text]="e.name" class="file-name"></Label>
+                <Label [text]="metaOf(e)" class="file-meta"></Label>
+              </StackLayout>
+              <Label col="2" [text]="isSelected(e.id) ? '✓' : '›'" [class.check-on]="isSelected(e.id)" class="file-chev"></Label>
+            </GridLayout>
+          }
+        </StackLayout>
+      </ScrollView>
+    }
+
+    @if (entries().length > 0 && gridView()) {
+      <ScrollView>
+        <FlexboxLayout flexDirection="row" flexWrap="wrap" justifyContent="space-between" class="grid-wrap">
+          @for (e of entries(); track e.id) {
+            <StackLayout class="grid-tile" [class.selected-item]="isSelected(e.id)" (tap)="openEntry(e)" (longPress)="onLongPress(e)">
+              <GridLayout class="type-badge tile-badge">
+                @if (e.category === 'image' && thumbOf(e)) {
+                  <Image [src]="thumbOf(e)" stretch="aspectFill" class="thumb-img"></Image>
+                } @else {
+                  <Label [text]="codeOf(e)" class="badge-text"></Label>
+                }
+              </GridLayout>
+              <Label [text]="e.name" class="file-name tile-name"></Label>
+              <Label [text]="fmtSizeOf(e)" class="file-meta"></Label>
+            </StackLayout>
+          }
+        </FlexboxLayout>
+      </ScrollView>
+    }
+  </GridLayout>
+</GridLayout>

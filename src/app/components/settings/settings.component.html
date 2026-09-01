@@ -1,0 +1,65 @@
+<GridLayout rows="auto,*" class="page">
+  <GridLayout row="0" rows="auto" columns="auto,*,auto" class="header">
+    <Label col="0" text="‹" class="header-back" (tap)="back()"></Label>
+    <Label col="1" text="Settings" class="header-title"></Label>
+    <Label col="2" text="" class="header-back"></Label>
+  </GridLayout>
+
+  <ScrollView row="1">
+    <StackLayout class="p-lg">
+
+      <Label text="LOCK" class="section-label"></Label>
+      <StackLayout class="card card-list">
+        <GridLayout rows="auto" columns="*,auto" class="setting-row" (tap)="changeLock()">
+          <StackLayout col="0">
+            <Label text="Lock method" class="card-title"></Label>
+            <Label [text]="methodLabel()" class="body muted"></Label>
+          </StackLayout>
+          <Label col="1" text="›" class="chev"></Label>
+        </GridLayout>
+        <GridLayout rows="auto" columns="*,auto" class="setting-row" (tap)="changeLock()">
+          <StackLayout col="0">
+            <Label text="Change password / PIN / pattern" class="card-title"></Label>
+            <Label text="Replaces your current secret." class="body muted"></Label>
+          </StackLayout>
+          <Label col="1" text="›" class="chev"></Label>
+        </GridLayout>
+        <GridLayout rows="auto" columns="*,auto" class="setting-row">
+          <StackLayout col="0">
+            <Label text="Fingerprint unlock" class="card-title"></Label>
+            <Label [text]="bioAvailable() ? 'Use your phone fingerprint to open the vault.' : 'Not available on this phone.'" class="body muted"></Label>
+          </StackLayout>
+          <Switch col="1" [checked]="bioEnabled()" [isEnabled]="bioAvailable()" (checkedChange)="onBioChange($event)"></Switch>
+        </GridLayout>
+      </StackLayout>
+
+      <Label text="STORAGE" class="section-label"></Label>
+      <StackLayout class="card">
+        <Label [text]="stats().count + ' file' + (stats().count === 1 ? '' : 's') + '  ·  ' + bytesLabel()" class="card-title"></Label>
+        <Label
+          text="Files live in SecuVault's private, app-only storage. Other apps, file managers and USB browsing cannot see them."
+          class="body muted"
+          textWrap="true"
+          marginTop="6"></Label>
+        <Button text="Erase all vault files" class="btn btn-danger btn-wide" marginTop="14" (tap)="eraseAll()"></Button>
+      </StackLayout>
+
+      <Label text="PRIVACY" class="section-label"></Label>
+      <StackLayout class="card">
+        <Label text="Active protections" class="card-title"></Label>
+        <Label text="▸ Screenshots and the app preview in the recent-apps view are blocked." class="body muted" textWrap="true"></Label>
+        <Label text="▸ Android cloud backups of the app data are disabled." class="body muted" textWrap="true"></Label>
+        <Label text="▸ 5 wrong attempts trigger a 30 second lock-out." class="body muted" textWrap="true"></Label>
+        <Label text="▸ Auto-lock when the app is left in the background for more than a minute." class="body muted" textWrap="true"></Label>
+      </StackLayout>
+
+      <Label text="DANGER ZONE" class="section-label"></Label>
+      <StackLayout class="card">
+        <Button text="Reset SecuVault (lock + files)" class="btn btn-danger btn-wide" (tap)="resetApp()"></Button>
+      </StackLayout>
+
+      <Label text="SecuVault 1.0.0 · NativeScript + Angular" class="body muted center" marginTop="20"></Label>
+
+    </StackLayout>
+  </ScrollView>
+</GridLayout>

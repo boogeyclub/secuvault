@@ -1,0 +1,63 @@
+<GridLayout rows="auto,*" class="page">
+  <StackLayout row="0" class="center lock-header">
+    <GridLayout class="logo-badge" width="72" height="72" borderRadius="20">
+      <Label text="🔐" class="logo-glyph"></Label>
+    </GridLayout>
+    <Label text="SecuVault" class="h2 title-accent" marginTop="12"></Label>
+    <Label [text]="titleText()" class="body muted"></Label>
+  </StackLayout>
+
+  <ScrollView row="1">
+    <StackLayout class="p-lg">
+
+      @if (method() === 'password') {
+        <StackLayout class="enter-block">
+          <TextField
+            [secure]="!showPassword()"
+            [text]="password"
+            hint="Password"
+            returnKeyType="done"
+            class="input"
+            (textChange)="onPasswordChange($event)"></TextField>
+          <Label
+            [text]="showPassword() ? 'Hide' : 'Show'"
+            class="link right"
+            (tap)="showPassword.set(!showPassword())"></Label>
+          <Button text="Unlock" class="btn btn-primary btn-wide" [isEnabled]="password.length >= 1 && !busy()" (tap)="submit()"></Button>
+        </StackLayout>
+      }
+
+      @if (method() === 'pin') {
+        <StackLayout class="center">
+          <StackLayout orientation="horizontal" class="pin-dots">
+            @for (i of pinSlots(); track i) {
+              <Label class="pin-dot" [class.filled]="i <= pinEntered().length"></Label>
+            }
+          </StackLayout>
+          <app-pin-pad (digit)="onPinDigit($event)" (backspace)="onPinBack()"></app-pin-pad>
+        </StackLayout>
+      }
+
+      @if (method() === 'pattern') {
+        <StackLayout class="center">
+          <app-pattern-lock #pattern (pattern)="onPattern($event)"></app-pattern-lock>
+          <Button text="Unlock" class="btn btn-primary btn-wide" [isEnabled]="patternDraft().length >= 4 && !busy()" (tap)="submit()"></Button>
+        </StackLayout>
+      }
+
+      @if (cooldownSecs() > 0) {
+        <Label [text]="'Too many attempts. Try again in ' + cooldownSecs() + 's'" class="error-text" textWrap="true"></Label>
+      }
+      @else if (error()) {
+        <Label [text]="error()" class="error-text" textWrap="true"></Label>
+      }
+
+      @if (bioAvailable() && bioEnabled()) {
+        <Label text="👆  Unlock with fingerprint" class="bio-btn" (tap)="tryBio()"></Label>
+      }
+
+      <Label text="Forgot your secret? Reset the vault" class="link center muted-link" (tap)="resetVault()"></Label>
+
+    </StackLayout>
+  </ScrollView>
+</GridLayout>

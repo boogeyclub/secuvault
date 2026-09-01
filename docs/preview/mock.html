@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecuVault — UI Preview</title>
+<style>
+  :root{
+    --bg:#0B1411; --surface:#14231D; --surface2:#1C2E26; --border:#24372F;
+    --text:#E8F2ED; --muted:#93A79E; --accent:#2EE6A8; --accent-dark:#06231A;
+    --danger:#FF6B6B; --danger-bg:#3A1F1F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{
+    font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(1200px 700px at 50% -10%, #12352A 0%, #0A110E 55%, #060A08 100%);
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:28px 12px;
+    color:var(--text);
+  }
+  .stage{display:flex; flex-direction:column; align-items:center; gap:14px}
+  .frame{
+    width:380px; height:780px; max-width:96vw; max-height:82vh;
+    background:var(--bg); border-radius:44px; border:1px solid #20362C;
+    box-shadow:0 30px 80px rgba(0,0,0,.6), inset 0 0 0 2px #0A120E;
+    overflow:hidden; position:relative; display:flex; flex-direction:column;
+  }
+  .screen{position:absolute; inset:0; display:flex; flex-direction:column; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; transform:translateY(10px)}
+  .screen.on{opacity:1; pointer-events:auto; transform:none}
+  .notch{position:absolute; top:10px; left:50%; transform:translateX(-50%); width:130px; height:26px; background:#060A08; border-radius:20px; z-index:50}
+  .statusbar{height:46px; display:flex; align-items:flex-end; justify-content:space-between; padding:0 26px 6px; font-size:12px; color:var(--muted); flex:none}
+  .scroll{flex:1; overflow-y:auto; padding:18px 18px 26px; scrollbar-width:none}
+  .scroll::-webkit-scrollbar{display:none}
+
+  /* shared */
+  .h1{font-size:28px;font-weight:800;letter-spacing:-.5px}
+  .h2{font-size:22px;font-weight:800}
+  .h3{font-size:17px;font-weight:700}
+  .accent{color:var(--accent)}
+  .muted{color:var(--muted);font-size:12.5px;line-height:1.5}
+  .body{font-size:14px;line-height:1.55}
+  .center{text-align:center}
+  .card{background:var(--surface);border:1px solid #1F3129;border-radius:16px;padding:16px;margin-top:12px}
+  .btn{display:block;width:100%;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:14px;color:var(--text);background:var(--surface2)}
+  .btn.primary{background:var(--accent);color:var(--accent-dark)}
+  .btn.outline{background:transparent;border:1.5px solid var(--accent);color:var(--accent)}
+  .btn.danger{background:var(--danger-bg);color:var(--danger)}
+  .btn.sm{display:inline-block;width:auto;padding:9px 14px;font-size:13px;margin:0}
+  .btn:active{transform:scale(.98)}
+  .logo{width:92px;height:92px;border-radius:24px;background:var(--surface);border:1px solid #2A3D35;display:flex;align-items:center;justify-content:center;font-size:42px;margin:6px auto 0}
+  .banner{border-radius:12px;padding:10px 14px;margin:10px 16px 0;font-size:12.5px;border:1px solid var(--accent);background:#14332A;color:var(--text)}
+  .banner.err{border-color:var(--danger);background:var(--danger-bg)}
+  .feature{display:flex;gap:10px;margin-bottom:12px}
+  .feature .f{color:var(--accent);font-weight:800;flex:none}
+  .feature span{font-size:13.5px;color:#C9D8D0;line-height:1.5}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px 4px;flex:none}
+  .topbar .t{font-size:19px;font-weight:800;color:var(--accent)}
+  .iconbtn{background:var(--surface2);border:none;color:var(--text);border-radius:12px;padding:9px 13px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:600}
+  .iconbtn.accent{color:var(--accent-dark);background:var(--accent);font-weight:800}
+  .sub{padding:0 18px;flex:none}
+
+  /* method cards */
+  .mcard{display:flex;align-items:center;gap:14px;background:var(--surface);border:1.5px solid #1F3129;border-radius:16px;padding:14px;margin-top:12px;cursor:pointer}
+  .mcard.sel{border-color:var(--accent);background:#16281F}
+  .mcard .mi{font-size:24px;width:44px;text-align:center}
+  .mcard .mt{font-weight:700;font-size:15px}
+  .mcard .ms{font-size:12.5px;color:var(--muted)}
+  .mcard .radio{margin-left:auto;color:var(--accent);font-size:15px}
+
+  /* pin pad */
+  .dots{display:flex;justify-content:center;gap:16px;margin:14px 0}
+  .dot{width:14px;height:14px;border-radius:50%;border:2px solid #3A4F45}
+  .dot.f{background:var(--accent);border-color:var(--accent)}
+  .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:270px;margin:6px auto 0}
+  .key{background:var(--surface);border:1px solid #1F3129;border-radius:16px;padding:15px 0;font-size:20px;font-weight:700;color:var(--text);cursor:pointer;font-family:inherit}
+  .key:active{background:#1E3129}
+
+  /* pattern */
+  .patwrap{position:relative;width:280px;height:280px;margin:8px auto 0}
+  .psvg{position:absolute;inset:0}
+  .pdot{position:absolute;width:52px;height:52px;border-radius:50%;background:#16231E;border:2px solid #2A3D35;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent-dark);transition:background .12s,border-color .12s}
+  .pdot.sel{background:var(--accent);border-color:var(--accent)}
+  .pdot.last{border-color:#7AFFD2}
+
+  /* vault items */
+  .actions{display:flex;gap:8px;padding:12px 18px 2px;flex:none}
+  .item{display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid transparent;border-radius:14px;padding:10px;margin-bottom:10px;cursor:pointer}
+  .item.sel{border-color:var(--accent)}
+  .badge{width:52px;height:52px;border-radius:14px;background:#1D3129;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--accent);flex:none;overflow:hidden}
+  .badge img{width:100%;height:100%;object-fit:cover}
+  .info{flex:1;min-width:0}
+  .name{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .meta{font-size:12px;color:var(--muted);margin-top:2px}
+  .chev{color:#4A5F55;font-size:20px}
+  .chev.on{color:var(--accent)}
+  .selbar{display:flex;align-items:center;gap:12px;background:var(--surface2);border-radius:14px;padding:10px 14px;margin:10px 16px 0;flex:none}
+  .selbar button{background:none;border:none;color:var(--accent);font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit}
+  .selbar .danger{color:var(--danger)}
+  .selbar .count{flex:1;font-size:13.5px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .tile{background:var(--surface);border:1.5px solid transparent;border-radius:14px;padding:10px;cursor:pointer}
+  .tile.sel{border-color:var(--accent)}
+  .tile .badge{width:100%;height:86px;margin-bottom:8px;border-radius:12px}
+  .tile .name{font-size:12px}
+  .empty{text-align:center;padding:90px 30px 0}
+  .empty .glyph{font-size:52px}
+  .empty .btn{width:220px;margin:18px auto 0}
+  .toast{position:absolute;bottom:18px;left:18px;right:18px;background:#14332A;border:1px solid var(--accent);color:var(--text);border-radius:12px;padding:11px 14px;font-size:12.5px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;transform:translateY(8px)}
+  .toast.show{opacity:1;transform:none}
+  .toast.err{background:var(--danger-bg);border-color:var(--danger)}
+  .detailimg{width:100%;height:250px;border-radius:16px;object-fit:cover;margin-top:6px}
+  .meta2{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1F3129;font-size:13.5px}
+  .link{color:var(--accent);font-weight:700;font-size:13.5px;text-align:center;margin-top:16px;cursor:pointer}
+  .caption{margin-top:16px;font-size:12px;color:#5F7269;text-align:center;max-width:380px;line-height:1.5}
+  .row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid #1F3129;cursor:pointer}
+  .row .rl{font-size:14.5px;font-weight:600}
+  .row .rd{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .row .chev{color:#4A5F55;font-size:20px}
+  .switch{width:44px;height:26px;border-radius:20px;background:#3A4F45;position:relative;flex:none;transition:background .2s}
+  .switch.on{background:var(--accent)}
+  .switch i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#E8F2ED;transition:left .2s}
+  .switch.on i{left:21px}
+  .seclabel{font-size:11px;letter-spacing:1.2px;color:#5F7269;font-weight:800;margin:20px 0 4px}
+  .bio{display:block;width:100%;text-align:center;color:var(--accent);font-weight:700;font-size:14.5px;padding:12px;margin-top:14px;background:none;border:none;cursor:pointer;font-family:inherit}
+  .err{color:var(--danger);font-size:13px;text-align:center;margin-top:12px}
+  .progress{background:var(--surface);border:1px solid #1F3129;border-radius:14px;padding:13px 16px;margin:10px 16px 0;flex:none}
+  .ptrack{height:8px;background:var(--bg);border-radius:4px;margin-top:8px;overflow:hidden}
+  .pfill{height:100%;background:var(--accent);border-radius:4px;transition:width .2s}
+  .plabel{font-size:12.5px;color:var(--muted)}
+  .plabel b{color:var(--text);font-weight:600}
+  .headrow{display:flex;align-items:center;gap:12px;padding:16px 18px 10px;flex:none}
+  .headrow .h2{flex:1}
+  .headrow .lock{font-size:20px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="frame" id="frame">
+    <div class="notch"></div>
+
+    <!-- WELCOME -->
+    <div class="screen on" id="s-welcome">
+      <div class="statusbar"><span>09:41</span><span>🔒</span></div>
+      <div class="scroll center">
+        <div class="logo">🔐</div>
+        <div class="h1 accent" style="margin-top:18px">SecuVault</div>
+        <div class="muted" style="font-size:14.5px;margin-top:4px">Your private vault</div>
+        <p class="muted" style="margin-top:12px">Hide files, documents, images and videos away from your main phone — locked behind a password, PIN, pattern or your fingerprint.</p>
+        <div class="card" style="text-align:left;margin-top:24px">
+          <div class="feature"><div class="f">▸</div><span>Files are <b style="color:#E8F2ED">moved</b> into private, app-only storage — the original disappears from your phone.</span></div>
+          <div class="feature"><div class="f">▸</div><span>Unlock with password, PIN, pattern or fingerprint — whichever your phone supports.</span></div>
+          <div class="feature"><div class="f">▸</div><span>Restore files to Downloads whenever you need them back.</span></div>
+          <div class="feature"><div class="f">▸</div><span>Screenshots and app previews are blocked for extra privacy.</span></div>
+        </div>
+      </div>
+      <div style="padding:0 18px 22px;flex:none"><button class="btn primary" onclick="go('setup')">Get started</button></div>
+    </div>
+
+    <!-- SETUP -->
+    <div class="screen" id="s-setup">
+      <div class="statusbar"><span>09:41</span><span>🔒</span></div>
+      <div class="topbar"><button class="iconbtn" onclick="go('welcome')">‹</button><div style="font-weight:800">Create your vault</div><span style="width:40px"></span></div>
+      <div class="scroll" id="setup-scroll">
+        <p class="muted center">Choose how you want to unlock SecuVault.</p>
+        <div class="mcard sel" onclick="pickMethod(this)" data-m="pin"><div class="mi">🔢</div><div><div class="mt">PIN code</div><div class="ms">A fast 4–6 digit numeric code.</div></div><div class="radio">●</div></div>
+        <div class="mcard" onclick="pickMethod(this)" data-m="pattern"><div class="mi">✳</div><div><div class="mt">Pattern</div><div class="ms">Draw a shape on the 3×3 dot grid.</div></div><div class="radio">○</div></div>
+        <div class="mcard" onclick="pickMethod(this)" data-m="password"><div class="mi">🔑</div><div><div class="mt">Password</div><div class="ms">Words, numbers and symbols. Strongest.</div></div><div class="radio">○</div></div>
+        <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+          <div><div class="mt" style="font-weight:700">Fingerprint unlock</div><div class="ms" style="margin-top:3px">Also unlock with your phone's fingerprint.</div></div>
+          <div class="switch on" id="bio-sw" onclick="this.classList.toggle('on')"><i></i></div>
+        </div>
+      </div>
+      <div style="padding:0 18px 22px;flex:none"><button class="btn primary" onclick="setupContinue()">Continue</button></div>
+    </div>
+
+    <!-- LOCK -->
+    <div class="screen" id="s-lock">
+      <div class="statusbar"><span>09:41</span><span>🔒</span></div>
+      <div class="center" style="padding-top:30px;flex:none">
+        <div class="logo" style="width:70px;height:70px;font-size:32px;border-radius:18px">🔐</div>
+        <div class="h2 accent" style="margin-top:12px">SecuVault</div>
+        <div class="muted" id="lock-title">Enter your PIN</div>
+      </div>
+      <div class="scroll center" style="padding-top:6px">
+        <div id="lock-pin">
+          <div class="dots" id="pin-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+          <div class="pad">
+            <button class="key" onclick="pin(1)">1</button><button class="key" onclick="pin(2)">2</button><button class="key" onclick="pin(3)">3</button>
+            <button class="key" onclick="pin(4)">4</button><button class="key" onclick="pin(5)">5</button><button class="key" onclick="pin(6)">6</button>
+            <button class="key" onclick="pin(7)">7</button><button class="key" onclick="pin(8)">8</button><button class="key" onclick="pin(9)">9</button>
+            <button class="key" style="visibility:hidden"></button><button class="key" onclick="pin(0)">0</button><button class="key" onclick="pin(-1)">⌫</button>
+          </div>
+        </div>
+        <div id="lock-pattern" style="display:none">
+          <div class="patwrap" id="patwrap">
+            <svg class="psvg" id="psvg"></svg>
+          </div>
+          <button class="btn primary" id="pat-btn" style="width:280px;margin:0 auto" onclick="patSubmit()">Unlock</button>
+        </div>
+        <div class="err" id="lock-err"></div>
+        <button class="bio" onclick="bio()">👆  Unlock with fingerprint</button>
+        <div class="link" style="margin-bottom:10px" onclick="go('welcome')">Forgot your secret? Reset the vault</div>
+      </div>
+    </div>
+
+    <!-- VAULT -->
+    <div class="screen" id="s-vault">
+      <div class="statusbar"><span>09:41</span><span>🔒</span></div>
+      <div class="headrow">
+        <div class="h2 accent">SecuVault</div>
+        <span class="lock" title="Lock now" onclick="go('lock')">🔒</span>
+      </div>
+      <div class="sub muted" id="vault-stats">6 items · 148.3 MB</div>
+      <div class="actions">
+        <button class="iconbtn accent" onclick="mockImport()">＋ Add files</button>
+        <button class="iconbtn" id="viewbtn" onclick="toggleView()">⊞</button>
+        <button class="iconbtn" onclick="go('settings')">⚙</button>
+      </div>
+      <div class="selbar" id="selbar" style="display:none">
+        <button onclick="clearSel()">✕</button><div class="count" id="selcount">1 selected</div>
+        <button onclick="restoreSel()">↥ Restore</button><button class="danger" onclick="deleteSel()">🗑 Delete</button>
+      </div>
+      <div class="progress" id="progress" style="display:none">
+        <div class="plabel">Importing: <b id="pname">photo_2026.jpg</b></div>
+        <div class="ptrack"><div class="pfill" id="pfill" style="width:0%"></div></div>
+      </div>
+      <div class="scroll" id="vault-scroll">
+        <div id="list"></div>
+        <div id="grid" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- DETAIL -->
+    <div class="screen" id="s-detail">
+      <div class="statusbar"><span>09:41</span><span>🔒</span></div>
+      <div class="topbar"><button class="iconbtn" onclick="go('vault')">‹</button><div style="font-weight:800">File</div><span style="width:40px"></span></div>
+      <div class="scroll">
+        <img class="detailimg" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='260'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23164d3b'/><stop offset='.6' stop-color='%230c2f25'/><stop offset='1' stop-color='%230a1d17'/></linearGradient></defs><rect width='400' height='260' fill='url(%23g)'/><circle cx='200' cy='130' r='60' fill='none' stroke='%232EE6A8' stroke-width='3' opacity='.9'/><circle cx='200' cy='130' r='18' fill='%232EE6A8' opacity='.95'/><circle cx='330' cy='55' r='7' fill='%232EE6A8' opacity='.6'/><circle cx='75' cy='190' r='5' fill='%232EE6A8' opacity='.5'/></svg>" alt="">
+        <div class="h3 center" style="margin-top:16px" id="d-name">beach_sunset.jpg</div>
+        <div class="card" style="margin-top:16px">
+          <div class="meta2"><span class="muted">Size</span><span class="body">4.2 MB</span></div>
+          <div class="meta2"><span class="muted">Added</span><span class="body" style="font-size:12.5px">Aug 28, 2026 · 18:42</span></div>
+          <div class="meta2" style="border:none"><span class="muted">Original file</span><span class="body" style="font-size:12.5px">deleted from phone</span></div>
+        </div>
+        <p class="muted center" style="margin-top:10px">The original was deleted from your phone when this file was imported.</p>
+        <button class="btn primary" onclick="toast('Opening with the system app…')">Open</button>
+        <button class="btn outline" onclick="toast('Restored to Downloads/SecuVault ✓')">Restore to Downloads</button>
+        <button class="btn danger" onclick="confirm('This file would be permanently deleted.')">Delete from vault</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="screen" id="s-settings">
+      <div class="statusbar"><span>09:41</span><span>🔒</span></div>
+      <div class="topbar"><button class="iconbtn" onclick="go('vault')">‹</button><div style="font-weight:800">Settings</div><span style="width:40px"></span></div>
+      <div class="scroll">
+        <div class="seclabel">LOCK</div>
+        <div class="card" style="padding:4px 16px;margin-top:0">
+          <div class="row" onclick="toast('Opens the change-lock wizard')"><div><div class="rl">Lock method</div><div class="rd">PIN code</div></div><div class="chev">›</div></div>
+          <div class="row" onclick="toast('Opens the change-lock wizard')"><div><div class="rl">Change password / PIN / pattern</div><div class="rd">Replaces your current secret.</div></div><div class="chev">›</div></div>
+          <div class="row" style="border:none" onclick="toggleBio()"><div><div class="rl">Fingerprint unlock</div><div class="rd">Use your phone fingerprint to open the vault.</div></div><div class="switch on" id="bio2"><i></i></div></div>
+        </div>
+        <div class="seclabel">STORAGE</div>
+        <div class="card" style="margin-top:0">
+          <div style="font-weight:700">6 files · 148.3 MB</div>
+          <p class="muted" style="margin-top:6px">Files live in SecuVault's private, app-only storage. Other apps, file managers and USB browsing cannot see them.</p>
+          <button class="btn danger" onclick="confirm('This would permanently erase every vault file.')">Erase all vault files</button>
+        </div>
+        <div class="seclabel">PRIVACY</div>
+        <div class="card" style="margin-top:0">
+          <div style="font-weight:700">Active protections</div>
+          <p class="muted" style="margin-top:6px">▸ Screenshots and the app preview in the recent-apps view are blocked.<br>▸ Android cloud backups of the app data are disabled.<br>▸ 5 wrong attempts trigger a 30-second lock-out.<br>▸ Auto-lock when the app is left in the background for more than a minute.</p>
+        </div>
+        <div class="seclabel">DANGER ZONE</div>
+        <div class="card" style="margin-top:0"><button class="btn danger" style="margin-top:0" onclick="confirm('This would remove the lock AND delete every file.')">Reset SecuVault (lock + files)</button></div>
+        <div class="muted center" style="margin:18px 0 8px">SecuVault 1.0.0 · NativeScript + Angular</div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+  <div class="caption">Interactive mock of the real NativeScript + Angular app.<br>PIN is 1234 · tap the ⚙ to browse settings · long-press a file to select.</div>
+</div>
+
+<script>
+// ---- screens ----
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  const el=document.getElementById('s-'+id);
+  el.classList.add('on');
+  if(id==='vault') render();
+  if(id==='lock'){ resetPin(); resetPattern(); }
+}
+// ---- setup method picker ----
+let method='pin';
+function pickMethod(el){
+  document.querySelectorAll('.mcard').forEach(m=>{m.classList.remove('sel');m.querySelector('.radio').textContent='○';});
+  el.classList.add('sel'); el.querySelector('.radio').textContent='●';
+  method=el.dataset.m;
+}
+function setupContinue(){ toast('In the app: enter & confirm your '+method+', then create the vault.'); go('lock'); }
+
+// ---- lock: PIN ----
+let pinv='';
+function resetPin(){ pinv=''; document.querySelectorAll('#pin-dots .dot').forEach(d=>d.classList.remove('f')); document.getElementById('lock-err').textContent=''; }
+function pin(d){
+  if(d===-1){pinv=pinv.slice(0,-1);}
+  else if(pinv.length<4){pinv+=d;}
+  document.querySelectorAll('#pin-dots .dot').forEach((el,i)=>el.classList.toggle('f',i<pinv.length));
+  if(pinv.length===4){
+    if(pinv==='1234'){ toast('Unlocked ✓'); setTimeout(()=>go('vault'),450); }
+    else { document.getElementById('lock-err').textContent='Wrong PIN. 4 attempt(s) left.'; setTimeout(resetPin,650); }
+  }
+}
+// ---- lock: pattern ----
+let sel=[]; const dots=[];
+(function buildPattern(){
+  const wrap=document.getElementById('patwrap');
+  const C=[72,140,208];
+  for(let r=0;r<3;r++)for(let c=0;c<3;c++){
+    const i=r*3+c+1;
+    const d=document.createElement('div');
+    d.className='pdot';
+    d.style.left=(C[c]-26)+'px'; d.style.top=(C[r]-26)+'px';
+    d.dataset.i=i;
+    d.onclick=()=>tapDot(i);
+    wrap.appendChild(d); dots.push(d);
+  }
+})();
+function tapDot(i){
+  const idx=sel.indexOf(i);
+  if(idx>=0) sel=sel.slice(0,idx+1); else sel.push(i);
+  drawPat();
+  document.getElementById('pat-btn').disabled=sel.length<4;
+  document.getElementById('pat-btn').style.opacity=sel.length<4?0.45:1;
+}
+function drawPat(){
+  const C=[72,140,208];
+  const pts=sel.map(i=>({x:C[(i-1)%3],y:C[Math.floor((i-1)/3)]}));
+  let p='';
+  pts.forEach((pt,i)=>p+=(i?'L':'M')+pt.x+' '+pt.y+' ');
+  document.getElementById('psvg').innerHTML='<path d="'+p+'" stroke="#2EE6A8" stroke-width="4" fill="none" stroke-linecap="round"/>';
+  dots.forEach(d=>{
+    const i=+d.dataset.i;
+    d.classList.toggle('sel',sel.includes(i));
+    d.classList.toggle('last',sel[sel.length-1]===i);
+    d.textContent=sel.indexOf(i)+1||'';
+  });
+}
+function resetPattern(){ sel=[]; drawPat(); }
+function patSubmit(){ if(sel.length>=4){ toast('Unlocked ✓'); setTimeout(()=>go('vault'),450);} }
+// ---- lock: bio ----
+function bio(){ document.getElementById('lock-err').textContent='Fingerprint not recognized — use your PIN.'; }
+// ---- vault ----
+const FILES=[
+ {n:'beach_sunset.jpg',s:'4.2 MB',t:'IMG',m:'Image · Aug 28, 2026 · 18:42',img:1},
+ {n:'Q3_financials.xlsx',s:'1.8 MB',t:'DOC',m:'Document · Aug 27, 2026 · 09:15'},
+ {n:'family_video.mp4',s:'112.6 MB',t:'VID',m:'Video · Aug 25, 2026 · 21:03'},
+ {n:'passport_scan.pdf',s:'860 KB',t:'DOC',m:'Document · Aug 22, 2026 · 13:47'},
+ {n:'voice_memo_07.m4a',s:'3.1 MB',t:'AUD',m:'Audio · Aug 19, 2026 · 08:30'},
+ {n:'backup_keys.zip',s:'25.8 MB',t:'ZIP',m:'Archive · Aug 17, 2026 · 22:58'},
+];
+let selected=new Set(), grid=false;
+const PH='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2780%27 height=%2780%27><rect width=%2780%27 height=%2780%27 fill=%27%23164d3b%27/><circle cx=%2740%27 cy=%2732%27 r=%2714%27 fill=%27%232EE6A8%27 opacity=%27.9%27/><path d=%27M8 72 L32 48 L48 60 L72 40%27 stroke=%27%232EE6A8%27 stroke-width=%274%27 fill=%27none%27 stroke-linecap=%27round%27/></svg>';
+function render(){
+  const L=document.getElementById('list'), G=document.getElementById('grid');
+  L.innerHTML=''; G.innerHTML='';
+  FILES.forEach((f,i)=>{
+    const badge=f.img?'<img src="'+PH+'">':f.t;
+    L.insertAdjacentHTML('beforeend','<div class="item'+(selected.has(i)?' sel':'')+'" id="it-'+i+'" onclick="openItem('+i+')"><div class="badge">'+badge+'</div><div class="info"><div class="name">'+f.n+'</div><div class="meta">'+f.m+'</div></div><div class="chev'+(selected.has(i)?' on':'')+'">'+(selected.has(i)?'✓':'›')+'</div></div>');
+    G.insertAdjacentHTML('beforeend','<div class="tile'+(selected.has(i)?' sel':'')+'" onclick="openItem('+i+')"><div class="badge">'+badge+'</div><div class="name">'+f.n+'</div><div class="meta">'+f.s+'</div></div>');
+  });
+  FILES.forEach((f,i)=>{
+    const it=document.getElementById('it-'+i);
+    if(it){ it.addEventListener('contextmenu',e=>{e.preventDefault();toggleSel(i);});
+      let t=0; it.addEventListener('touchstart',()=>{t=setTimeout(()=>toggleSel(i),500)},{passive:true});
+      it.addEventListener('touchend',()=>clearTimeout(t)); it.addEventListener('touchmove',()=>clearTimeout(t));
+      it.addEventListener('mousedown',()=>{t=setTimeout(()=>toggleSel(i),550);});
+      it.addEventListener('mouseup',()=>clearTimeout(t)); it.addEventListener('mouseleave',()=>clearTimeout(t));
+    }
+  });
+  document.getElementById('selbar').style.display=selected.size?'flex':'none';
+  document.getElementById('selcount').textContent=selected.size+' selected';
+  document.getElementById('vault-stats').textContent=FILES.length+' items · 148.3 MB';
+}
+function toggleView(){ grid=!grid; document.getElementById('viewbtn').textContent=grid?'☰':'⊞'; document.getElementById('list').style.display=grid?'none':'block'; document.getElementById('grid').style.display=grid?'grid':'none'; }
+function toggleSel(i){ selected.has(i)?selected.delete(i):selected.add(i); render(); }
+function clearSel(){ selected.clear(); render(); }
+function openItem(i){ if(selected.size){toggleSel(i);return;} document.getElementById('d-name').textContent=FILES[i].n; go('detail'); }
+function restoreSel(){ toast(selected.size+' file(s) restored to Downloads/SecuVault ✓'); clearSel(); }
+function deleteSel(){ toast('Deleted '+selected.size+' file(s) from the vault.'); clearSel(); }
+function mockImport(){
+  const bar=document.getElementById('progress'); bar.style.display='block';
+  const names=['IMG_4021.jpg','contract_signed.pdf','holiday_clip.mp4','notes_backup.zip'];
+  const n=names[Math.floor(Math.random()*names.length)];
+  document.getElementById('pname').textContent=n;
+  let p=0; const iv=setInterval(()=>{ p+=7+Math.random()*14; if(p>=100){p=100;clearInterval(iv); bar.style.display='none';
+    FILES.unshift({n,s:(Math.random()*8+1).toFixed(1)+' MB',t:n.includes('.mp4')?'VID':n.includes('.pdf')?'DOC':n.includes('.zip')?'ZIP':'IMG',m:'Just now',img:n.endsWith('.jpg')});
+    render(); document.getElementById('vault-stats').textContent=FILES.length+' items · 148.3 MB';
+    toast('Added '+n+' to the vault. Original deleted from your phone ✓');
+  } document.getElementById('pfill').style.width=p+'%'; },140);
+}
+function toggleBio(){ document.getElementById('bio2').classList.toggle('on'); }
+function confirm(msg){ toast(msg); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2600); }
+render();
+</script>
+</body>
+</html>

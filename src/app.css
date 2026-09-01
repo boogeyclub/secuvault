@@ -1,0 +1,270 @@
+/* ============================================================
+   SecuVault design system
+   Dark "vault" theme - deep greens with a mint accent.
+   ============================================================ */
+
+Page {
+  background-color: #0B1411;
+}
+
+.page {
+  background-color: #0B1411;
+  color: #E8F2ED;
+}
+
+/* ---------- typography ---------- */
+
+.h1 { font-size: 30; font-weight: bold; color: #E8F2ED; }
+.h2 { font-size: 24; font-weight: bold; color: #E8F2ED; }
+.h3 { font-size: 20; font-weight: bold; color: #E8F2ED; }
+.title-accent { color: #2EE6A8; }
+.subtitle { font-size: 16; color: #93A79E; text-align: center; }
+.body { font-size: 15; color: #E8F2ED; }
+.muted { color: #93A79E; font-size: 13; }
+.center { text-align: center; }
+.link { color: #2EE6A8; font-size: 14; font-weight: bold; }
+.muted-link { color: #5F7269; font-size: 13; }
+
+/* ---------- layout helpers ---------- */
+
+.p-lg { padding: 20; }
+.p-md { padding: 12; }
+
+.card {
+  background-color: #14231D;
+  border-radius: 16;
+  border-width: 1;
+  border-color: #1F3129;
+  padding: 16;
+  margin-top: 12;
+}
+
+.card-title { font-size: 16; font-weight: bold; color: #E8F2ED; }
+
+.section-label {
+  font-size: 12;
+  color: #5F7269;
+  font-weight: bold;
+  letter-spacing: 1;
+  margin-top: 22;
+  margin-bottom: 4;
+}
+
+.header { padding: 14 16 8 16; }
+.header-title { font-size: 18; font-weight: bold; color: #E8F2ED; text-align: center; }
+.header-back { font-size: 28; color: #2EE6A8; }
+.header-icon { font-size: 22; }
+
+/* ---------- buttons ---------- */
+
+.btn {
+  font-size: 16;
+  font-weight: bold;
+  border-radius: 14;
+  padding: 13 20;
+  color: #E8F2ED;
+  background-color: #1C2E26;
+  margin-top: 16;
+}
+
+.btn:disabled { opacity: 0.45; }
+
+.btn-primary { background-color: #2EE6A8; color: #06231A; }
+.btn-ghost { background-color: #1C2E26; color: #E8F2ED; }
+.btn-outline { background-color: transparent; border-width: 1; border-color: #2EE6A8; color: #2EE6A8; }
+.btn-danger { background-color: #3A1F1F; color: #FF6B6B; }
+.btn-sm { font-size: 13; padding: 9 14; margin-top: 0; }
+.btn-wide { width: 100%; }
+
+/* ---------- inputs ---------- */
+
+.input {
+  background-color: #14231D;
+  color: #E8F2ED;
+  placeholder-color: #5F7269;
+  border-radius: 14;
+  border-width: 1;
+  border-color: #24372F;
+  padding: 13 16;
+  font-size: 16;
+  margin-top: 8;
+}
+
+/* ---------- welcome ---------- */
+
+.logo-badge {
+  background-color: #14231D;
+  border-width: 1;
+  border-color: #2A3D35;
+  horizontal-align: center;
+}
+.logo-glyph { font-size: 44; text-align: center; }
+
+.feature-row { margin-bottom: 12; }
+.feature-bullet { color: #2EE6A8; font-size: 15; font-weight: bold; width: 24; }
+.feature-text { color: #C9D8D0; font-size: 14; }
+
+.footer { padding: 16 20; }
+
+/* ---------- method picker (setup) ---------- */
+
+.method-card { margin-top: 12; padding: 14; }
+.method-selected { border-color: #2EE6A8; background-color: #16281F; }
+.method-icon { font-size: 26; width: 46; vertical-align: center; }
+.radio { color: #2EE6A8; font-size: 16; vertical-align: center; }
+.bio-card { margin-top: 12; }
+
+/* ---------- PIN ---------- */
+
+.pin-dots { horizontal-align: center; margin: 12 0; }
+.pin-dot {
+  width: 14;
+  height: 14;
+  border-radius: 7;
+  border-width: 2;
+  border-color: #3A4F45;
+  background-color: transparent;
+  margin: 0 10;
+}
+.pin-dot.filled { background-color: #2EE6A8; border-color: #2EE6A8; }
+
+.pin-pad { width: 300; horizontal-align: center; margin-top: 4; }
+.pin-key {
+  background-color: #14231D;
+  color: #E8F2ED;
+  font-size: 22;
+  font-weight: bold;
+  border-radius: 14;
+  margin: 6;
+  padding: 14 0;
+}
+
+/* ---------- pattern lock ---------- */
+
+.pattern-area { horizontal-align: center; margin: 10 0; }
+.pattern-line { background-color: #2EE6A8; }
+.dot {
+  background-color: #16231E;
+  border-radius: 26;
+  border-width: 2;
+  border-color: #2A3D35;
+}
+.dot-selected { background-color: #2EE6A8; border-color: #2EE6A8; }
+.dot-last { border-color: #7AFFD2; }
+.dot-num { color: #06231A; font-size: 18; font-weight: bold; text-align: center; }
+
+.enter-block { width: 100%; }
+
+/* ---------- lock screen ---------- */
+
+.lock-header { padding: 26 20 6 20; }
+
+.bio-btn {
+  color: #2EE6A8;
+  font-size: 16;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 18;
+  padding: 10;
+}
+
+.error-text {
+  color: #FF6B6B;
+  font-size: 14;
+  text-align: center;
+  margin-top: 14;
+}
+
+/* ---------- vault ---------- */
+
+.vault-header { padding: 18 16 10 16; }
+.action-row { margin-top: 12; }
+.action-row .btn { margin-right: 8; }
+
+.selection-bar {
+  background-color: #1C2E26;
+  border-radius: 14;
+  padding: 10 12;
+  margin: 8 16 0 16;
+}
+.sel-btn { color: #2EE6A8; font-size: 15; font-weight: bold; padding: 0 12; vertical-align: center; }
+.sel-danger { color: #FF6B6B; }
+.sel-count { color: #E8F2ED; font-size: 14; vertical-align: center; }
+
+.banner {
+  background-color: #14332A;
+  border-width: 1;
+  border-color: #2EE6A8;
+  border-radius: 12;
+  padding: 10 14;
+  margin: 10 16 0 16;
+}
+.banner-err { background-color: #3A1F1F; border-color: #FF6B6B; }
+.banner-text { color: #E8F2ED; font-size: 13; }
+
+.progress-card { margin: 10 16 0 16; }
+.progress-track {
+  height: 8;
+  background-color: #0B1411;
+  border-radius: 4;
+  vertical-align: center;
+}
+.progress-fill { background-color: #2EE6A8; border-radius: 4; height: 8; }
+
+.empty-glyph { font-size: 54; text-align: center; }
+
+/* ---------- file items ---------- */
+
+.file-item {
+  background-color: #14231D;
+  border-radius: 14;
+  border-width: 1;
+  border-color: transparent;
+  padding: 10;
+  margin-bottom: 10;
+}
+.selected-item { border-color: #2EE6A8; }
+
+.type-badge {
+  width: 52;
+  height: 52;
+  border-radius: 14;
+  background-color: #1D3129;
+  vertical-align: center;
+}
+.badge-text { color: #2EE6A8; font-size: 12; font-weight: bold; text-align: center; }
+.badge-text.lg { font-size: 16; }
+.thumb-img { border-radius: 14; }
+
+.file-info { margin-left: 12; vertical-align: center; }
+.file-name { font-size: 15; color: #E8F2ED; }
+.file-meta { font-size: 12; color: #93A79E; }
+.file-chev { color: #4A5F55; font-size: 22; vertical-align: center; }
+.check-on { color: #2EE6A8; }
+
+.grid-wrap { padding: 4 8; }
+.grid-tile {
+  width: 31%;
+  background-color: #14231D;
+  border-radius: 14;
+  border-width: 1;
+  border-color: transparent;
+  padding: 10;
+  margin: 8 1% 8 1%;
+}
+.tile-badge { width: 100%; height: 90; margin-bottom: 8; }
+.tile-name { font-size: 13; }
+
+/* ---------- detail ---------- */
+
+.detail-image { border-radius: 16; height: 320; }
+.detail-badge-wrap { padding: 30 0 10 0; }
+.detail-badge { width: 110; height: 110; border-radius: 26; }
+
+/* ---------- settings ---------- */
+
+.card-list { padding: 4 16; }
+.setting-row { padding: 14 0; border-bottom-width: 1; border-bottom-color: #1F3129; }
+.chev { color: #4A5F55; font-size: 24; vertical-align: center; }
+
+Switch { color: #2EE6A8; }

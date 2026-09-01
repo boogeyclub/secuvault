@@ -1,0 +1,55 @@
+<GridLayout rows="auto,auto,*" class="page">
+  <GridLayout row="0" rows="auto" columns="auto,*,auto" class="header">
+    <Label col="0" text="‹" class="header-back" (tap)="back()"></Label>
+    <Label col="1" text="File" class="header-title"></Label>
+    <Label col="2" text="" class="header-back"></Label>
+  </GridLayout>
+
+  @if (banner()) {
+    <GridLayout row="1" rows="auto" class="banner" [class.banner-err]="banner().kind === 'err'">
+      <Label [text]="banner().text" class="banner-text" textWrap="true"></Label>
+    </GridLayout>
+  }
+
+  @if (entry(); as e) {
+    <ScrollView row="2">
+      <StackLayout class="p-lg">
+
+        @if (e.category === 'image') {
+          <Image [src]="pathOf(e)" stretch="aspectFit" class="detail-image"></Image>
+        } @else {
+          <StackLayout class="center detail-badge-wrap">
+            <GridLayout class="type-badge detail-badge">
+              <Label [text]="codeOf(e)" class="badge-text lg"></Label>
+            </GridLayout>
+            <Label [text]="labelOf(e) + ' file'" class="body muted" marginTop="10"></Label>
+          </StackLayout>
+        }
+
+        <Label [text]="e.name" class="h3 center" textWrap="true" marginTop="18"></Label>
+
+        <StackLayout class="card" marginTop="18">
+          <GridLayout rows="auto" columns="*,auto">
+            <Label col="0" text="Size" class="body muted"></Label>
+            <Label col="1" [text]="sizeOf(e)" class="body"></Label>
+          </GridLayout>
+          <GridLayout rows="auto" columns="*,auto" marginTop="8">
+            <Label col="0" text="Added" class="body muted"></Label>
+            <Label col="1" [text]="dateOf(e)" class="body"></Label>
+          </GridLayout>
+          <GridLayout rows="auto" columns="*,auto" marginTop="8">
+            <Label col="0" text="Original file" class="body muted"></Label>
+            <Label col="1" [text]="e.moved ? 'deleted from phone' : 'still on phone'" class="body"></Label>
+          </GridLayout>
+        </StackLayout>
+
+        <Label [text]="movedNote(e)" class="body muted center" textWrap="true" marginTop="10"></Label>
+
+        <Button text="Open" class="btn btn-primary btn-wide" marginTop="20" (tap)="openInSystem()"></Button>
+        <Button text="Restore to Downloads" class="btn btn-outline btn-wide" (tap)="restore()"></Button>
+        <Button text="Delete from vault" class="btn btn-danger btn-wide" (tap)="remove()"></Button>
+
+      </StackLayout>
+    </ScrollView>
+  }
+</GridLayout>

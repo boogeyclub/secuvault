@@ -1,0 +1,152 @@
+<GridLayout rows="auto,*" class="page">
+  <GridLayout row="0" rows="auto" columns="auto,*,auto" class="header">
+    <Label col="0" text="‹" class="header-back" (tap)="back()"></Label>
+    <Label col="1" [text]="title()" class="header-title"></Label>
+    <Label col="2" text="" class="header-back"></Label>
+  </GridLayout>
+
+  <ScrollView row="1">
+    <StackLayout class="p-lg">
+
+      <Label [text]="subtitle()" class="body muted center" textWrap="true"></Label>
+
+      <!-- STEP 1: choose the method -->
+      @if (step() === 'method') {
+        <StackLayout marginTop="24">
+
+          <GridLayout rows="auto" columns="auto,*,auto" class="card method-card" [class.method-selected]="chosen() === 'password'" (tap)="choose('password')">
+            <Label col="0" text="🔑" class="method-icon"></Label>
+            <StackLayout col="1">
+              <Label text="Password" class="card-title"></Label>
+              <Label text="Words, numbers and symbols. Strongest option." class="body muted" textWrap="true"></Label>
+            </StackLayout>
+            <Label col="2" [text]="chosen() === 'password' ? '●' : '○'" class="radio"></Label>
+          </GridLayout>
+
+          <GridLayout rows="auto" columns="auto,*,auto" class="card method-card" [class.method-selected]="chosen() === 'pin'" (tap)="choose('pin')">
+            <Label col="0" text="🔢" class="method-icon"></Label>
+            <StackLayout col="1">
+              <Label text="PIN code" class="card-title"></Label>
+              <Label text="A fast 4–6 digit numeric code." class="body muted" textWrap="true"></Label>
+            </StackLayout>
+            <Label col="2" [text]="chosen() === 'pin' ? '●' : '○'" class="radio"></Label>
+          </GridLayout>
+
+          <GridLayout rows="auto" columns="auto,*,auto" class="card method-card" [class.method-selected]="chosen() === 'pattern'" (tap)="choose('pattern')">
+            <Label col="0" text="✳" class="method-icon"></Label>
+            <StackLayout col="1">
+              <Label text="Pattern" class="card-title"></Label>
+              <Label text="Draw a shape on the 3×3 dot grid." class="body muted" textWrap="true"></Label>
+            </StackLayout>
+            <Label col="2" [text]="chosen() === 'pattern' ? '●' : '○'" class="radio"></Label>
+          </GridLayout>
+
+          @if (!changeMode() && bioAvailable()) {
+            <GridLayout rows="auto" columns="*,auto" class="card bio-card">
+              <StackLayout col="0">
+                <Label text="Fingerprint unlock" class="card-title"></Label>
+                <Label text="Also unlock with your phone's fingerprint." class="body muted" textWrap="true"></Label>
+              </StackLayout>
+              <Switch col="1" [checked]="useBio()" (checkedChange)="useBio.set($any($event).object.checked)"></Switch>
+            </GridLayout>
+          }
+        </StackLayout>
+      }
+
+      <!-- STEP 2: enter the secret -->
+      @else if (step() === 'enter') {
+        <StackLayout marginTop="24" class="center">
+          @if (chosen() === 'password') {
+            <StackLayout class="enter-block">
+              <TextField
+                [secure]="!showSecret()"
+                [text]="passwordFirst"
+                hint="Your password"
+                returnKeyType="done"
+                class="input"
+                (textChange)="onFirstPasswordChange($event)"></TextField>
+              <Label
+                [text]="showSecret() ? 'Hide' : 'Show'"
+                class="link right"
+                (tap)="showSecret.set(!showSecret())"></Label>
+            </StackLayout>
+          }
+
+          @if (chosen() === 'pin') {
+            <StackLayout class="enter-block">
+              <StackLayout orientation="horizontal" class="pin-dots">
+                @for (i of pinDots(pinFirst.length || 4); track i) {
+                  <Label class="pin-dot" [class.filled]="i <= pinFirst.length"></Label>
+                }
+              </StackLayout>
+              <app-pin-pad (digit)="onFirstPinDigit($event)" (backspace)="onFirstPinBack()"></app-pin-pad>
+            </StackLayout>
+          }
+
+          @if (chosen() === 'pattern') {
+            <StackLayout class="enter-block">
+              <app-pattern-lock #firstPattern (pattern)="onFirstPattern($event)"></app-pattern-lock>
+              <Label [text]="patternFirst.length + ' dot' + (patternFirst.length === 1 ? '' : 's') + ' selected'" class="body muted"></Label>
+            </StackLayout>
+          }
+        </StackLayout>
+      }
+
+      <!-- STEP 3: confirm -->
+      @else {
+        <StackLayout marginTop="24" class="center">
+          @if (chosen() === 'password') {
+            <StackLayout class="enter-block">
+              <TextField
+                [secure]="!showSecret()"
+                [text]="passwordConfirm"
+                hint="Repeat the password"
+                returnKeyType="done"
+                class="input"
+                (textChange)="onConfirmPasswordChange($event)"></TextField>
+              <Label
+                [text]="showSecret() ? 'Hide' : 'Show'"
+                class="link right"
+                (tap)="showSecret.set(!showSecret())"></Label>
+            </StackLayout>
+          }
+
+          @if (chosen() === 'pin') {
+            <StackLayout class="enter-block">
+              <StackLayout orientation="horizontal" class="pin-dots">
+                @for (i of pinDots(pinFirst.length); track i) {
+                  <Label class="pin-dot" [class.filled]="i <= pinConfirm.length"></Label>
+                }
+              </StackLayout>
+              <app-pin-pad (digit)="onConfirmPinDigit($event)" (backspace)="onConfirmPinBack()"></app-pin-pad>
+            </StackLayout>
+          }
+
+          @if (chosen() === 'pattern') {
+            <StackLayout class="enter-block">
+              <app-pattern-lock #confirmPattern (pattern)="onConfirmPattern($event)"></app-pattern-lock>
+              <Label [text]="patternConfirm.length + ' dot' + (patternConfirm.length === 1 ? '' : 's') + ' selected'" class="body muted"></Label>
+            </StackLayout>
+          }
+        </StackLayout>
+      }
+
+      @if (error()) {
+        <Label [text]="error()" class="error-text" textWrap="true"></Label>
+      }
+
+      @if (step() === 'method') {
+        <Button text="Continue" class="btn btn-primary btn-wide" [isEnabled]="!!chosen()" (tap)="continueFromMethod()"></Button>
+      }
+      @else if (step() === 'enter') {
+        <Button text="Continue" class="btn btn-primary btn-wide" (tap)="continueFromEnter()"></Button>
+      }
+      @else {
+        <Button text="Save lock" class="btn btn-primary btn-wide" (tap)="finish()"></Button>
+      }
+
+      <Label text="Back" class="link center" (tap)="back()"></Label>
+
+    </StackLayout>
+  </ScrollView>
+</GridLayout>

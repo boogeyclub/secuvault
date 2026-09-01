@@ -1,0 +1,43 @@
+<GridLayout rows="*,auto" class="page">
+  <ScrollView row="0">
+    <StackLayout class="p-lg">
+
+      <StackLayout class="center" marginTop="10">
+        <GridLayout class="logo-badge" width="96" height="96" borderRadius="26">
+          <Label text="🔐" class="logo-glyph"></Label>
+        </GridLayout>
+        <Label text="SecuVault" class="h1 title-accent" marginTop="20"></Label>
+        <Label text="Your private vault" class="subtitle"></Label>
+        <Label
+          text="Hide files, documents, images and videos away from your main phone — locked behind a password, PIN, pattern or your fingerprint."
+          class="body muted center"
+          textWrap="true"
+          marginTop="12"></Label>
+      </StackLayout>
+
+      <StackLayout class="card" marginTop="28">
+        <StackLayout class="feature-row" orientation="horizontal">
+          <Label text="▸" class="feature-bullet"></Label>
+          <Label text="Files are moved into private, app-only storage — the original disappears from your phone." textWrap="true" class="feature-text"></Label>
+        </StackLayout>
+        <StackLayout class="feature-row" orientation="horizontal">
+          <Label text="▸" class="feature-bullet"></Label>
+          <Label text="Unlock with password, PIN, pattern or fingerprint — whichever your phone supports." textWrap="true" class="feature-text"></Label>
+        </StackLayout>
+        <StackLayout class="feature-row" orientation="horizontal">
+          <Label text="▸" class="feature-bullet"></Label>
+          <Label text="Restore files to Downloads whenever you need them back." textWrap="true" class="feature-text"></Label>
+        </StackLayout>
+        <StackLayout class="feature-row" orientation="horizontal">
+          <Label text="▸" class="feature-bullet"></Label>
+          <Label text="Screenshots and app previews are blocked for extra privacy." textWrap="true" class="feature-text"></Label>
+        </StackLayout>
+      </StackLayout>
+
+    </StackLayout>
+  </ScrollView>
+
+  <StackLayout row="1" class="footer">
+    <Button text="Get started" class="btn btn-primary" (tap)="start()"></Button>
+  </StackLayout>
+</GridLayout>
