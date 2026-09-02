@@ -3,6 +3,7 @@ import { PageRouterOutlet } from '@nativescript/angular';
 import { RouterExtensions } from '@nativescript/angular';
 import { Application, isAndroid } from '@nativescript/core';
 import { LockService } from './services/lock.service';
+import { I18nService } from './i18n/i18n.service';
 
 @Component({
   selector: 'ns-app',
@@ -13,8 +14,12 @@ import { LockService } from './services/lock.service';
 export class AppComponent implements OnInit {
   private router = inject(RouterExtensions);
   private lock = inject(LockService);
+  private i18n = inject(I18nService);
 
   ngOnInit(): void {
+    // Restore the saved language (or follow the device locale).
+    this.i18n.init();
+
     // Block screenshots and the app preview in the Android recents screen.
     if (isAndroid) {
       try {

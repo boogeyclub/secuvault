@@ -3,7 +3,9 @@ import { NativeScriptCommonModule, NativeScriptRouterModule, RouterExtensions } 
 import { ActivatedRoute } from '@angular/router';
 import { Dialogs, Utils } from '@nativescript/core';
 import { VaultService } from '../../services/vault.service';
-import { VaultEntry, categoryCode, categoryLabel, fmtBytes, fmtDate } from '../../models';
+import { VaultEntry } from '../../models';
+import { I18nService } from '../../i18n/i18n.service';
+import { ICON } from '../../ui/icons';
 
 /**
  * Single file view: preview (for images), metadata and the actions
@@ -20,6 +22,8 @@ export class FileDetailComponent implements OnInit {
   private vault = inject(VaultService);
   private router = inject(RouterExtensions);
   private route = inject(ActivatedRoute);
+  readonly i18n = inject(I18nService);
+  readonly ic = ICON;
 
   readonly entry = signal<VaultEntry | null>(null);
   readonly banner = signal<{ kind: 'ok' | 'err'; text: string } | null>(null);
@@ -34,30 +38,50 @@ export class FileDetailComponent implements OnInit {
     this.entry.set(e);
   }
 
-  codeOf(e: VaultEntry): string {
-    return categoryCode(e.category);
-  }
-
   pathOf(e: VaultEntry): string {
     return this.vault.filePathOf(e);
   }
 
-  labelOf(e: VaultEntry): string {
-    return categoryLabel(e.category);
+  catIcon(e: VaultEntry): string {
+    switch (e.category) {
+      case 'image': return this.ic.image;
+      case 'video': return this.ic.video;
+      case 'audio': return this.ic.audio;
+      case 'document': return this.ic.doc;
+      case 'archive': return this.ic.archive;
+      default: return this.ic.file;
+    }
+  }
+
+  catClass(e: VaultEntry): string {
+    return 'cat-' + e.category;
+  }
+
+  catLabel(e: VaultEntry): string {
+    return this.i18n.t(
+      e.category === 'image' ? 'cat.image'
+        : e.category === 'video' ? 'cat.video'
+        : e.category === 'audio' ? 'cat.audio'
+        : e.category === 'document' ? 'cat.document'
+        : e.category === 'archive' ? 'cat.archive'
+        : 'cat.other'
+    );
   }
 
   sizeOf(e: VaultEntry): string {
-    return fmtBytes(e.size);
+    return this.i18n.fmtBytes(e.size);
   }
 
   dateOf(e: VaultEntry): string {
-    return fmtDate(e.addedAt);
+    return this.i18n.fmtDate(e.addedAt);
+  }
+
+  originalLabel(e: VaultEntry): string {
+    return this.i18n.t(e.moved ? 'detail.original.deleted' : 'detail.original.kept');
   }
 
   movedNote(e: VaultEntry): string {
-    return e.moved
-      ? 'The original was deleted from your phone when this file was imported.'
-      : 'Imported as a copy — the original may still be on your phone.';
+    return this.i18n.t(e.moved ? 'detail.note.deleted' : 'detail.note.kept');
   }
 
   openInSystem(): void {
@@ -65,9 +89,9 @@ export class FileDetailComponent implements OnInit {
     if (!e) return;
     try {
       const ok = Utils.openFile(this.vault.filePathOf(e));
-      if (!ok) this.showBanner('err', 'No app on this phone can open this file type.');
+      if (!ok) this.showBanner('err', this.i18n.t('detail.banner.openErr'));
     } catch (err) {
-      this.showBanner('err', 'Could not open the file.');
+      this.showBanner('err', this.i18n.t('detail.banner.openFail'));
     }
   }
 
@@ -75,18 +99,18 @@ export class FileDetailComponent implements OnInit {
     const e = this.entry();
     if (!e) return;
     const ok = await this.vault.restoreToDownloads(e);
-    if (ok) this.showBanner('ok', 'Restored to Downloads/SecuVault.');
-    else this.showBanner('err', 'Could not restore the file.');
+    if (ok) this.showBanner('ok', this.i18n.t('detail.banner.restored'));
+    else this.showBanner('err', this.i18n.t('detail.banner.restoreErr'));
   }
 
   async remove(): Promise<void> {
     const e = this.entry();
     if (!e) return;
     const ok = await Dialogs.confirm({
-      title: 'Delete from vault',
-      message: 'Delete “' + e.name + '” from the vault? This cannot be undone.',
-      okButtonText: 'Delete',
-      cancelButtonText: 'Cancel',
+      title: this.i18n.t('detail.delete.title'),
+      message: this.i18n.t('detail.delete.msg', { name: e.name }),
+      okButtonText: this.i18n.t('common.delete'),
+      cancelButtonText: this.i18n.t('common.cancel'),
     });
     if (!ok) return;
     await this.vault.deleteEntries([e.id]);

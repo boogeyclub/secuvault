@@ -1,102 +1,176 @@
-<GridLayout rows="auto,auto,*" class="page">
+<GridLayout rows="auto,auto,auto,auto,*" class="page">
 
   <!-- Header -->
-  <StackLayout row="0" class="vault-header">
-    <GridLayout rows="auto" columns="*,auto">
-      <Label col="0" text="SecuVault" class="h2 title-accent"></Label>
-      <Label col="1" text="🔒" class="header-icon" (tap)="lockNow()"></Label>
+  <StackLayout row="0" class="top-bar">
+    <GridLayout rows="auto" columns="*,auto,auto">
+      <StackLayout col="0" orientation="horizontal">
+        <Label [text]="ic.shieldLock" class="ic ic-accent ic-26" verticalAlignment="center"></Label>
+        <Label [text]="i18n.t('common.appName')" class="vault-title" marginLeft="8" verticalAlignment="center"></Label>
+      </StackLayout>
+      <GridLayout col="1" class="icon-btn" marginLeft="8" (tap)="lockNow()">
+        <Label [text]="ic.lock" class="ic ic-20"></Label>
+      </GridLayout>
+      <GridLayout col="2" class="icon-btn" marginLeft="8" (tap)="openSettings()">
+        <Label [text]="ic.settings" class="ic ic-20"></Label>
+      </GridLayout>
     </GridLayout>
-    <Label [text]="entries().length + ' item' + (entries().length === 1 ? '' : 's') + '  ·  ' + bytesLabel()" class="body muted"></Label>
-
-    <GridLayout rows="auto" columns="*,auto,auto" class="action-row">
-      <Button col="0" text="＋ Add files" class="btn btn-primary btn-sm" (tap)="addFiles()"></Button>
-      <Button col="1" [text]="gridView() ? '☰' : '⊞'" class="btn btn-ghost btn-sm" (tap)="gridView.set(!gridView())"></Button>
-      <Button col="2" text="⚙" class="btn btn-ghost btn-sm" (tap)="openSettings()"></Button>
-    </GridLayout>
+    <Label [text]="countLabel() + '  ·  ' + bytesLabel()" class="top-bar-sub"></Label>
   </StackLayout>
 
-  <!-- Selection bar -->
+  <!-- Search + tools  OR  selection action bar -->
   @if (selectionMode()) {
     <GridLayout row="1" rows="auto" columns="auto,*,auto,auto" class="selection-bar">
-      <Label col="0" text="✕" class="sel-btn" (tap)="clearSelection()"></Label>
-      <Label col="1" [text]="selectedCount() + ' selected'" class="sel-count"></Label>
-      <Label col="2" text="↥ Restore" class="sel-btn" (tap)="restoreSelected()"></Label>
-      <Label col="3" text="🗑 Delete" class="sel-btn sel-danger" (tap)="deleteSelected()"></Label>
+      <GridLayout col="0" class="sel-btn" (tap)="clearSelection()">
+        <Label [text]="ic.close" class="ic ic-20 muted"></Label>
+      </GridLayout>
+      <Label col="1" [text]="i18n.t('vault.sel.count', { n: selectedCount() })" class="sel-count"></Label>
+      <GridLayout col="2" columns="auto,auto" class="sel-btn" (tap)="restoreSelected()">
+        <Label col="0" [text]="ic.download" class="ic ic-18 ic-accent"></Label>
+        <Label col="1" [text]="i18n.t('vault.sel.restore')" class="sel-btn" marginLeft="4"></Label>
+      </GridLayout>
+      <GridLayout col="3" columns="auto,auto" class="sel-btn" (tap)="deleteSelected()">
+        <Label col="0" [text]="ic.trash" class="ic ic-18 ic-danger"></Label>
+        <Label col="1" [text]="i18n.t('vault.sel.delete')" class="sel-btn" marginLeft="4" color="#FF7B74"></Label>
+      </GridLayout>
     </GridLayout>
+  } @else {
+    <StackLayout row="1" margin="2 12 0 12">
+      <GridLayout rows="auto" columns="*,auto,auto">
+        <GridLayout col="0" rows="auto" columns="auto,*" class="search-wrap">
+          <Label col="0" [text]="ic.search" class="ic ic-18 dim" verticalAlignment="center"></Label>
+          <TextField
+            col="1"
+            class="search-field"
+            [hint]="i18n.t('vault.search.hint')"
+            [text]="search()"
+            autocorrect="false"
+            (textChange)="onSearch($event)"></TextField>
+        </GridLayout>
+        <GridLayout col="1" class="icon-btn" marginLeft="8" (tap)="chooseSort()">
+          <Label [text]="ic.sortUpDown" class="ic ic-20"></Label>
+        </GridLayout>
+        <GridLayout col="2" class="icon-btn" marginLeft="8" (tap)="gridView.set(!gridView())">
+          <Label [text]="gridView() ? ic.list : ic.grid" class="ic ic-20"></Label>
+        </GridLayout>
+      </GridLayout>
+
+      <!-- Category filter chips -->
+      @if (presentCategories().length > 1) {
+        <ScrollView orientation="horizontal" marginTop="10">
+          <StackLayout orientation="horizontal">
+            <GridLayout rows="auto" columns="auto,auto" class="chip" [class.chip-on]="filter() === 'all'" (tap)="filter.set('all')">
+              <Label col="0" [text]="catLabel('all')" class="chip-label"></Label>
+              <Label col="1" [text]="'' + countOf('all')" class="chip-count"></Label>
+            </GridLayout>
+            @for (c of presentCategories(); track c) {
+              <GridLayout rows="auto" columns="auto,auto" class="chip" [class.chip-on]="filter() === c" (tap)="filter.set(c)">
+                <Label col="0" [text]="catLabel(c)" class="chip-label"></Label>
+                <Label col="1" [text]="'' + countOf(c)" class="chip-count"></Label>
+              </GridLayout>
+            }
+          </StackLayout>
+        </ScrollView>
+      }
+    </StackLayout>
   }
 
-  <!-- Banner -->
+  <!-- Banner (own row - never overlaps the selection bar) -->
   @if (banner()) {
-    <GridLayout row="1" rows="auto" class="banner" [class.banner-err]="banner().kind === 'err'">
-      <Label [text]="banner().text" class="banner-text" textWrap="true"></Label>
+    <GridLayout row="2" columns="auto,*" class="banner" [class.banner-ok]="banner().kind === 'ok'" [class.banner-err]="banner().kind === 'err'">
+      <Label col="0" [text]="banner().kind === 'ok' ? ic.checkCircle : ic.alertCircle" class="ic ic-20" [class.ic-accent]="banner().kind === 'ok'" [class.ic-danger]="banner().kind === 'err'"></Label>
+      <Label col="1" [text]="banner().text" class="banner-text" textWrap="true"></Label>
     </GridLayout>
   }
 
-  <!-- Import progress -->
+  <!-- Import progress (own row) -->
   @if (progress()) {
-    <StackLayout row="1" class="card progress-card">
-      <Label [text]="'Importing: ' + progress().current" class="body" textWrap="false"></Label>
+    <StackLayout row="3" class="card progress-card">
+      <Label [text]="progressText()" class="footnote" textWrap="false"></Label>
       <GridLayout rows="auto" columns="*,auto" marginTop="8">
         <GridLayout col="0" class="progress-track">
           <GridLayout [width]="percent() + '%'" class="progress-fill" horizontalAlignment="left"></GridLayout>
         </GridLayout>
-        <Label col="1" [text]="percent() + '%'" class="body muted" marginLeft="10"></Label>
+        <Label col="1" [text]="percent() + '%'" class="footnote muted" marginLeft="10"></Label>
       </GridLayout>
     </StackLayout>
   }
 
   <!-- Content -->
-  <GridLayout row="2">
+  <GridLayout row="4">
+
+    <!-- Empty vault -->
     @if (entries().length === 0) {
-      <StackLayout class="center">
-        <Label text="🗄" class="empty-glyph"></Label>
-        <Label text="Your vault is empty" class="h3"></Label>
-        <Label text="Files you add here are moved out of sight into private, app-only storage." class="body muted center" textWrap="true" marginTop="6"></Label>
-        <Button text="Add your first files" class="btn btn-primary" marginTop="20" (tap)="addFiles()"></Button>
+      <StackLayout class="center" verticalAlignment="center">
+        <GridLayout class="empty-glyph">
+          <Label [text]="ic.database" class="ic ic-46 dim"></Label>
+        </GridLayout>
+        <Label [text]="i18n.t('vault.empty.title')" class="h2" marginTop="20"></Label>
+        <Label [text]="i18n.t('vault.empty.text')" class="footnote muted center" textWrap="true" marginTop="8" marginLeft="30" marginRight="30"></Label>
+        <Button [text]="i18n.t('vault.empty.cta')" class="btn btn-primary" marginTop="22" (tap)="addFiles()"></Button>
       </StackLayout>
     }
 
-    @if (entries().length > 0 && !gridView()) {
+    <!-- No search result -->
+    @else if (visibleEntries().length === 0) {
+      <StackLayout class="center" verticalAlignment="center">
+        <GridLayout class="empty-glyph">
+          <Label [text]="ic.search" class="ic ic-46 dim"></Label>
+        </GridLayout>
+        <Label [text]="i18n.t('vault.noResults.title')" class="h2" marginTop="20"></Label>
+        <Label [text]="i18n.t('vault.noResults.text')" class="footnote muted center" textWrap="true" marginTop="8" marginLeft="30" marginRight="30"></Label>
+      </StackLayout>
+    }
+
+    <!-- List -->
+    @else if (!gridView()) {
       <ScrollView>
-        <StackLayout class="p-md">
-          @for (e of entries(); track e.id) {
+        <StackLayout class="p-md" marginBottom="90">
+          @for (e of visibleEntries(); track e.id) {
             <GridLayout rows="auto" columns="auto,*,auto" class="file-item" [class.selected-item]="isSelected(e.id)" (tap)="openEntry(e)" (longPress)="onLongPress(e)">
-              <GridLayout col="0" class="type-badge">
+              <GridLayout col="0" class="type-badge cat-common" [class]="catClass(e)">
                 @if (e.category === 'image' && thumbOf(e)) {
-                  <Image [src]="thumbOf(e)" stretch="aspectFill" class="thumb-img"></Image>
+                  <Image [src]="thumbOf(e)" stretch="aspectFill" class="thumb-img" width="50" height="50"></Image>
                 } @else {
-                  <Label [text]="codeOf(e)" class="badge-text"></Label>
+                  <Label [text]="catIcon(e)" class="ic ic-22"></Label>
                 }
               </GridLayout>
               <StackLayout col="1" class="file-info">
-                <Label [text]="e.name" class="file-name"></Label>
-                <Label [text]="metaOf(e)" class="file-meta"></Label>
+                <Label [text]="e.name" class="file-name" textWrap="false"></Label>
+                <Label [text]="metaOf(e)" class="file-meta" textWrap="false"></Label>
               </StackLayout>
-              <Label col="2" [text]="isSelected(e.id) ? '✓' : '›'" [class.check-on]="isSelected(e.id)" class="file-chev"></Label>
+              <Label col="2" [text]="isSelected(e.id) ? ic.check : ic.chevronRight" [class.check-on]="isSelected(e.id)" class="ic ic-20 file-chev"></Label>
             </GridLayout>
           }
         </StackLayout>
       </ScrollView>
     }
 
-    @if (entries().length > 0 && gridView()) {
+    <!-- Grid -->
+    @else {
       <ScrollView>
-        <FlexboxLayout flexDirection="row" flexWrap="wrap" justifyContent="space-between" class="grid-wrap">
-          @for (e of entries(); track e.id) {
+        <FlexboxLayout flexDirection="row" flexWrap="wrap" justifyContent="space-between" class="grid-wrap" marginBottom="90">
+          @for (e of visibleEntries(); track e.id) {
             <StackLayout class="grid-tile" [class.selected-item]="isSelected(e.id)" (tap)="openEntry(e)" (longPress)="onLongPress(e)">
-              <GridLayout class="type-badge tile-badge">
+              <GridLayout class="type-badge tile-badge cat-common" [class]="catClass(e)">
                 @if (e.category === 'image' && thumbOf(e)) {
                   <Image [src]="thumbOf(e)" stretch="aspectFill" class="thumb-img"></Image>
                 } @else {
-                  <Label [text]="codeOf(e)" class="badge-text"></Label>
+                  <Label [text]="catIcon(e)" class="ic ic-26"></Label>
                 }
               </GridLayout>
-              <Label [text]="e.name" class="file-name tile-name"></Label>
-              <Label [text]="fmtSizeOf(e)" class="file-meta"></Label>
+              <Label [text]="e.name" class="file-name tile-name" textWrap="true"></Label>
+              <Label [text]="fmtSizeOf(e)" class="file-meta" textWrap="false"></Label>
             </StackLayout>
           }
         </FlexboxLayout>
       </ScrollView>
+    }
+
+    <!-- Floating add button -->
+    @if (entries().length > 0 && !progress()) {
+      <GridLayout class="fab" (tap)="addFiles()">
+        <Label [text]="ic.plus" class="ic ic-26 ic-ink"></Label>
+      </GridLayout>
     }
   </GridLayout>
 </GridLayout>

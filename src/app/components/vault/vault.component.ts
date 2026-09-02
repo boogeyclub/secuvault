@@ -5,11 +5,18 @@ import { Dialogs } from '@nativescript/core';
 import { VaultService } from '../../services/vault.service';
 import { LockService } from '../../services/lock.service';
 import { PickerService } from '../../services/picker.service';
-import { VaultEntry, categoryCode, fmtBytes, fmtDate } from '../../models';
+import { VaultEntry, Category } from '../../models';
+import { I18nService } from '../../i18n/i18n.service';
+import { ICON } from '../../ui/icons';
+
+type SortMode = 'newest' | 'oldest' | 'name' | 'largest';
+
+const CATEGORIES: Category[] = ['image', 'video', 'audio', 'document', 'archive', 'other'];
 
 /**
- * The vault: file list/grid, import with progress, selection mode,
- * restore-to-Downloads and delete.
+ * The vault: searchable / filterable / sortable file list or grid,
+ * import with progress, selection action-mode, restore to
+ * Downloads and delete.
  */
 @Component({
   selector: 'app-vault',
@@ -23,6 +30,8 @@ export class VaultComponent implements OnInit {
   private lock = inject(LockService);
   private picker = inject(PickerService);
   private router = inject(RouterExtensions);
+  readonly i18n = inject(I18nService);
+  readonly ic = ICON;
 
   readonly entries = this.vault.entries;
   readonly gridView = signal(false);
@@ -30,9 +39,51 @@ export class VaultComponent implements OnInit {
   readonly progress = signal<{ done: number; total: number; current: string } | null>(null);
   readonly banner = signal<{ kind: 'ok' | 'err'; text: string } | null>(null);
 
+  readonly search = signal('');
+  readonly filter = signal<'all' | Category>('all');
+  readonly sort = signal<SortMode>('newest');
+
   readonly stats = computed(() => this.vault.stats());
   readonly selectionMode = computed(() => this.selectedIds().size > 0);
   readonly selectedCount = computed(() => this.selectedIds().size);
+
+  /** Entries after search + category filter + sort. */
+  readonly visibleEntries = computed<VaultEntry[]>(() => {
+    const q = this.search().trim().toLowerCase();
+    const f = this.filter();
+    const sort = this.sort();
+    let list = this.entries().filter((e) => {
+      if (f !== 'all' && e.category !== f) return false;
+      if (q && e.name.toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+    list = [...list].sort((a, b) => {
+      switch (sort) {
+        case 'oldest':
+          return a.addedAt - b.addedAt;
+        case 'name':
+          return a.name.localeCompare(b.name, this.i18n.locale());
+        case 'largest':
+          return b.size - a.size;
+        default:
+          return b.addedAt - a.addedAt;
+      }
+    });
+    return list;
+  });
+
+  /** Categories actually present in the vault (for the filter chips). */
+  readonly presentCategories = computed<Category[]>(() => {
+    const set = new Set<Category>();
+    for (const e of this.entries()) set.add(e.category);
+    return CATEGORIES.filter((c) => set.has(c));
+  });
+
+  readonly categoryCounts = computed<Map<string, number>>(() => {
+    const m = new Map<string, number>();
+    for (const e of this.entries()) m.set(e.category, (m.get(e.category) || 0) + 1);
+    return m;
+  });
 
   private bannerTimer: any = null;
 
@@ -40,8 +91,14 @@ export class VaultComponent implements OnInit {
     this.vault.init();
   }
 
+  // ---------- display helpers ----------
+
+  countLabel(): string {
+    return this.i18n.t('vault.count', { n: this.entries().length });
+  }
+
   bytesLabel(): string {
-    return fmtBytes(this.stats().bytes);
+    return this.i18n.fmtBytes(this.stats().bytes);
   }
 
   percent(): number {
@@ -50,34 +107,123 @@ export class VaultComponent implements OnInit {
     return Math.min(100, Math.round((p.done / p.total) * 100));
   }
 
+  progressText(): string {
+    const p = this.progress();
+    if (!p) return '';
+    return this.i18n.t(p.current ? 'vault.importing' : 'vault.import.preparing', { name: p.current });
+  }
+
+  catLabel(c: 'all' | Category): string {
+    if (c === 'all') return this.i18n.t('cat.all');
+    return this.i18n.t(
+      c === 'image' ? 'cat.image'
+        : c === 'video' ? 'cat.video'
+        : c === 'audio' ? 'cat.audio'
+        : c === 'document' ? 'cat.document'
+        : c === 'archive' ? 'cat.archive'
+        : 'cat.other'
+    );
+  }
+
+  catIcon(e: VaultEntry): string {
+    switch (e.category) {
+      case 'image': return this.ic.image;
+      case 'video': return this.ic.video;
+      case 'audio': return this.ic.audio;
+      case 'document': return this.ic.doc;
+      case 'archive': return this.ic.archive;
+      default: return this.ic.file;
+    }
+  }
+
+  catClass(e: VaultEntry): string {
+    return 'cat-' + e.category;
+  }
+
+  countOf(c: 'all' | Category): number {
+    return c === 'all' ? this.entries().length : this.categoryCounts().get(c) || 0;
+  }
+
+  metaOf(e: VaultEntry): string {
+    return [this.i18n.fmtBytes(e.size), this.catLabel(e.category), this.i18n.fmtDate(e.addedAt)].join('  ·  ');
+  }
+
+  fmtSizeOf(e: VaultEntry): string {
+    return this.i18n.fmtBytes(e.size) + '  ·  ' + this.i18n.fmtDate(e.addedAt);
+  }
+
+  // ---------- search / filter / sort ----------
+
+  onSearch(args: any): void {
+    this.search.set(((args.object && args.object.text) || '').trim());
+  }
+
+  clearSearch(): void {
+    this.search.set('');
+  }
+
+  // ---------- import ----------
+
   async addFiles(): Promise<void> {
     if (this.progress()) return;
     let uris: android.net.Uri[];
     try {
       uris = await this.picker.pickFiles('*/*');
     } catch (e) {
-      this.showBanner('err', 'Could not open the file picker.');
+      this.showBanner('err', this.i18n.t('vault.banner.pickerErr'));
       return;
     }
     if (!uris || uris.length === 0) return;
 
-    this.progress.set({ done: 0, total: 1, current: 'Preparing…' });
+    this.progress.set({ done: 0, total: 1, current: '' });
     try {
       const res = await this.vault.importUris(uris, (p) => this.progress.set(p));
       if (res.imported.length > 0) {
         const movedNote =
-          res.moved > 0 ? ' ' + res.moved + ' original(s) were deleted from your phone.' : '';
-        this.showBanner('ok', 'Added ' + res.imported.length + ' file(s) to the vault.' + movedNote);
+          res.moved > 0 ? ' ' + this.i18n.t('vault.banner.moved', { n: res.moved }) : '';
+        this.showBanner(
+          'ok',
+          this.i18n.t('vault.banner.imported', { n: res.imported.length }) + movedNote
+        );
       }
       if (res.failed.length > 0) {
-        this.showBanner('err', res.failed.length + ' file(s) could not be imported.');
+        this.showBanner('err', this.i18n.t('vault.banner.importFailed', { n: res.failed.length }));
       }
     } catch (e) {
-      this.showBanner('err', 'Import failed.');
+      this.showBanner('err', this.i18n.t('vault.banner.importErr'));
     } finally {
       this.progress.set(null);
     }
   }
+
+  // ---------- sort ----------
+
+  async chooseSort(): Promise<void> {
+    const labels: SortMode[] = ['newest', 'oldest', 'name', 'largest'];
+    const options = labels.map((m) => this.sortLabel(m));
+    try {
+      const res = await Dialogs.action({
+        title: this.i18n.t('vault.sort.title'),
+        cancelButtonText: this.i18n.t('common.cancel'),
+        actions: options,
+      });
+      const idx = options.indexOf(res);
+      if (idx >= 0) this.sort.set(labels[idx]);
+    } catch (e) {
+      /* dialog dismissed */
+    }
+  }
+
+  sortLabel(m: SortMode): string {
+    return this.i18n.t(
+      m === 'newest' ? 'vault.sort.newest'
+        : m === 'oldest' ? 'vault.sort.oldest'
+        : m === 'name' ? 'vault.sort.name'
+        : 'vault.sort.largest'
+    );
+  }
+
+  // ---------- selection ----------
 
   openEntry(e: VaultEntry): void {
     if (this.selectionMode()) {
@@ -115,35 +261,34 @@ export class VaultComponent implements OnInit {
       if (ids.indexOf(e.id) < 0) continue;
       if (await this.vault.restoreToDownloads(e)) ok++;
     }
-    if (ok > 0) this.showBanner('ok', ok + ' file(s) restored to Downloads/SecuVault.');
-    else this.showBanner('err', 'Could not restore the file(s).');
+    if (ok > 0) this.showBanner('ok', this.i18n.t('vault.banner.restored', { n: ok }));
+    else this.showBanner('err', this.i18n.t('vault.banner.restoreErr'));
   }
 
   async deleteSelected(): Promise<void> {
     const ids = [...this.selectedIds()];
     const ok = await Dialogs.confirm({
-      title: 'Delete from vault',
-      message:
-        'Delete ' + ids.length + ' file(s) from the vault? This cannot be undone.',
-      okButtonText: 'Delete',
-      cancelButtonText: 'Cancel',
+      title: this.i18n.t('vault.delete.title'),
+      message: this.i18n.t('vault.delete.msg', { n: ids.length }),
+      okButtonText: this.i18n.t('common.delete'),
+      cancelButtonText: this.i18n.t('common.cancel'),
     });
     if (!ok) return;
     this.clearSelection();
     await this.vault.deleteEntries(ids);
-    this.showBanner('ok', ids.length + ' file(s) deleted.');
+    this.showBanner('ok', this.i18n.t('vault.banner.deleted', { n: ids.length }));
   }
 
   async eraseAll(): Promise<void> {
     const ok = await Dialogs.confirm({
-      title: 'Erase the vault',
-      message: 'Permanently delete EVERY file in the vault? This cannot be undone.',
-      okButtonText: 'Erase all',
-      cancelButtonText: 'Cancel',
+      title: this.i18n.t('vault.erase.title'),
+      message: this.i18n.t('vault.erase.msg'),
+      okButtonText: this.i18n.t('vault.erase.ok'),
+      cancelButtonText: this.i18n.t('common.cancel'),
     });
     if (!ok) return;
     await this.vault.eraseAll();
-    this.showBanner('ok', 'Vault is empty.');
+    this.showBanner('ok', this.i18n.t('vault.banner.erased'));
   }
 
   lockNow(): void {
@@ -155,25 +300,8 @@ export class VaultComponent implements OnInit {
     this.router.navigate(['/settings']);
   }
 
-  codeOf(e: VaultEntry): string {
-    return categoryCode(e.category);
-  }
-
   thumbOf(e: VaultEntry): string {
     return this.vault.thumbPathOf(e);
-  }
-
-  metaOf(e: VaultEntry): string {
-    const parts = [fmtBytes(e.size)];
-    if (e.category === 'image' || e.category === 'video' || e.category === 'audio' || e.category === 'document' || e.category === 'archive') {
-      parts.push(e.category.charAt(0).toUpperCase() + e.category.slice(1));
-    }
-    parts.push(fmtDate(e.addedAt));
-    return parts.join('  ·  ');
-  }
-
-  fmtSizeOf(e: VaultEntry): string {
-    return fmtBytes(e.size) + '  ·  ' + fmtDate(e.addedAt);
   }
 
   private showBanner(kind: 'ok' | 'err', text: string): void {

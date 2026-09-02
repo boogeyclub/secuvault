@@ -4,6 +4,8 @@ import { ActivatedRoute } from '@angular/router';
 import { PinPadComponent } from '../pin-pad/pin-pad.component';
 import { PatternLockComponent } from '../pattern-lock/pattern-lock.component';
 import { LockService, LockMethod } from '../../services/lock.service';
+import { I18nService } from '../../i18n/i18n.service';
+import { ICON } from '../../ui/icons';
 
 type Step = 'method' | 'enter' | 'confirm';
 
@@ -23,6 +25,8 @@ export class SetupComponent implements OnInit {
   private lock = inject(LockService);
   private router = inject(RouterExtensions);
   private route = inject(ActivatedRoute);
+  readonly i18n = inject(I18nService);
+  readonly ic = ICON;
 
   /** Public aliases so the template can read the lock state. */
   readonly bioAvailable = this.lock.bioAvailable;
@@ -49,32 +53,50 @@ export class SetupComponent implements OnInit {
     this.useBio.set(this.lock.bioAvailable());
   }
 
+  /** 0-based wizard step index for the progress indicator. */
+  stepIndex(): number {
+    return this.step() === 'method' ? 0 : this.step() === 'enter' ? 1 : 2;
+  }
+
+  stepLabel(i: number): string {
+    return this.i18n.t(i === 0 ? 'setup.step.method' : i === 1 ? 'setup.step.enter' : 'setup.step.confirm');
+  }
+
   title(): string {
-    if (this.changeMode()) return 'Change lock';
-    return 'Create your vault';
+    return this.i18n.t(this.changeMode() ? 'setup.change.title' : 'setup.create.title');
   }
 
   subtitle(): string {
-    if (this.step() === 'method') return 'Choose how you want to unlock SecuVault.';
+    if (this.step() === 'method') return this.i18n.t('setup.method.subtitle');
     if (this.step() === 'enter') return this.enterPrompt();
-    return 'Repeat it once more to confirm.';
+    return this.i18n.t('setup.confirm.subtitle');
   }
 
   enterPrompt(): string {
     const m = this.chosen();
-    if (m === 'password') return 'Choose a password (6+ characters).';
-    if (m === 'pin') return 'Choose a 4–6 digit PIN.';
-    return 'Draw a pattern — at least 4 dots.';
+    if (m === 'password') return this.i18n.t('setup.prompt.password');
+    if (m === 'pin') return this.i18n.t('setup.prompt.pin');
+    return this.i18n.t('setup.prompt.pattern');
   }
 
   methodLabel(m: LockMethod): string {
-    return m === 'password' ? 'Password' : m === 'pin' ? 'PIN code' : 'Pattern';
+    return this.i18n.t(
+      m === 'password' ? 'setup.method.password' : m === 'pin' ? 'setup.method.pin' : 'setup.method.pattern'
+    );
   }
 
   methodHint(m: LockMethod): string {
-    if (m === 'password') return 'Words, numbers and symbols. Strongest option.';
-    if (m === 'pin') return 'A fast 4–6 digit numeric code.';
-    return 'Draw a shape on the 3×3 dot grid.';
+    return this.i18n.t(
+      m === 'password'
+        ? 'setup.method.password.hint'
+        : m === 'pin'
+          ? 'setup.method.pin.hint'
+          : 'setup.method.pattern.hint'
+    );
+  }
+
+  methodIcon(m: LockMethod): string {
+    return m === 'password' ? this.ic.keyOutline : m === 'pin' ? this.ic.dialpad : this.ic.gesture;
   }
 
   choose(m: LockMethod): void {
@@ -84,7 +106,7 @@ export class SetupComponent implements OnInit {
 
   continueFromMethod(): void {
     if (!this.chosen()) {
-      this.error.set('Pick a lock method first.');
+      this.error.set(this.i18n.t('setup.error.pickMethod'));
       return;
     }
     this.step.set('enter');
@@ -116,6 +138,10 @@ export class SetupComponent implements OnInit {
     return false;
   }
 
+  patternDotsLabel(n: number): string {
+    return this.i18n.t('setup.pattern.dots', { n: Math.max(1, n) });
+  }
+
   async finish(): Promise<void> {
     const m = this.chosen();
     if (!m) return;
@@ -129,7 +155,9 @@ export class SetupComponent implements OnInit {
     if (!this.isEnterValid()) { this.error.set(this.enterPrompt()); return; }
     if (!this.isConfirmValid()) { this.error.set(this.enterPrompt()); return; }
     if (first !== confirm) {
-      this.error.set(m === 'pattern' ? 'Patterns do not match — try again.' : 'They do not match — try again.');
+      this.error.set(
+        m === 'pattern' ? this.i18n.t('setup.error.mismatchPattern') : this.i18n.t('setup.error.mismatch')
+      );
       this.pinConfirm = '';
       this.passwordConfirm = '';
       this.patternConfirm = '';
@@ -146,7 +174,7 @@ export class SetupComponent implements OnInit {
         this.router.navigate(['/lock'], { clearHistory: true });
       }
     } catch (e) {
-      this.error.set('Something went wrong while saving. Please try again.');
+      this.error.set(this.i18n.t('setup.error.save'));
     }
   }
 

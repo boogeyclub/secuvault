@@ -1,43 +1,75 @@
 <GridLayout rows="*,auto" class="page">
+
   <ScrollView row="0">
     <StackLayout class="p-lg">
 
-      <StackLayout class="center" marginTop="10">
-        <GridLayout class="logo-badge" width="96" height="96" borderRadius="26">
-          <Label text="🔐" class="logo-glyph"></Label>
+      <!-- Language is the very first choice the user makes -->
+      <GridLayout columns="*,auto">
+        <Label col="0" [text]="i18n.t('lang.label')" class="eyebrow" verticalAlignment="center"></Label>
+        <GridLayout col="1">
+          <app-lang-toggle></app-lang-toggle>
         </GridLayout>
-        <Label text="SecuVault" class="h1 title-accent" marginTop="20"></Label>
-        <Label text="Your private vault" class="subtitle"></Label>
+      </GridLayout>
+
+      <StackLayout class="center" marginTop="14">
+        <GridLayout class="logo-badge" width="104" height="104" borderRadius="30">
+          <Label [text]="ic.shieldLock" class="ic ic-accent" fontSize="48"></Label>
+        </GridLayout>
+        <Label [text]="i18n.t('common.appName')" class="display title-accent" marginTop="22"></Label>
+        <Label [text]="i18n.t('welcome.tagline')" class="h3 muted" marginTop="2"></Label>
         <Label
-          text="Hide files, documents, images and videos away from your main phone — locked behind a password, PIN, pattern or your fingerprint."
-          class="body muted center"
+          [text]="i18n.t('welcome.intro')"
+          class="footnote muted center"
           textWrap="true"
-          marginTop="12"></Label>
+          marginTop="14"></Label>
       </StackLayout>
 
-      <StackLayout class="card" marginTop="28">
-        <StackLayout class="feature-row" orientation="horizontal">
-          <Label text="▸" class="feature-bullet"></Label>
-          <Label text="Files are moved into private, app-only storage — the original disappears from your phone." textWrap="true" class="feature-text"></Label>
-        </StackLayout>
-        <StackLayout class="feature-row" orientation="horizontal">
-          <Label text="▸" class="feature-bullet"></Label>
-          <Label text="Unlock with password, PIN, pattern or fingerprint — whichever your phone supports." textWrap="true" class="feature-text"></Label>
-        </StackLayout>
-        <StackLayout class="feature-row" orientation="horizontal">
-          <Label text="▸" class="feature-bullet"></Label>
-          <Label text="Restore files to Downloads whenever you need them back." textWrap="true" class="feature-text"></Label>
-        </StackLayout>
-        <StackLayout class="feature-row" orientation="horizontal">
-          <Label text="▸" class="feature-bullet"></Label>
-          <Label text="Screenshots and app previews are blocked for extra privacy." textWrap="true" class="feature-text"></Label>
-        </StackLayout>
+      <StackLayout class="card" marginTop="30">
+        <GridLayout rows="auto" columns="auto,*" class="feature-row">
+          <GridLayout col="0" class="feature-ic">
+            <Label [text]="ic.shieldKey" class="ic ic-accent ic-20"></Label>
+          </GridLayout>
+          <StackLayout col="1" marginLeft="12">
+            <Label [text]="i18n.t('welcome.f1.title')" class="card-title"></Label>
+            <Label [text]="i18n.t('welcome.f1.text')" class="card-text" textWrap="true"></Label>
+          </StackLayout>
+        </GridLayout>
+
+        <GridLayout rows="auto" columns="auto,*" class="feature-row">
+          <GridLayout col="0" class="feature-ic">
+            <Label [text]="ic.fingerprint" class="ic ic-accent ic-20"></Label>
+          </GridLayout>
+          <StackLayout col="1" marginLeft="12">
+            <Label [text]="i18n.t('welcome.f2.title')" class="card-title"></Label>
+            <Label [text]="i18n.t('welcome.f2.text')" class="card-text" textWrap="true"></Label>
+          </StackLayout>
+        </GridLayout>
+
+        <GridLayout rows="auto" columns="auto,*" class="feature-row">
+          <GridLayout col="0" class="feature-ic">
+            <Label [text]="ic.download" class="ic ic-accent ic-20"></Label>
+          </GridLayout>
+          <StackLayout col="1" marginLeft="12">
+            <Label [text]="i18n.t('welcome.f3.title')" class="card-title"></Label>
+            <Label [text]="i18n.t('welcome.f3.text')" class="card-text" textWrap="true"></Label>
+          </StackLayout>
+        </GridLayout>
+
+        <GridLayout rows="auto" columns="auto,*">
+          <GridLayout col="0" class="feature-ic">
+            <Label [text]="ic.security" class="ic ic-accent ic-20"></Label>
+          </GridLayout>
+          <StackLayout col="1" marginLeft="12">
+            <Label [text]="i18n.t('welcome.f4.title')" class="card-title"></Label>
+            <Label [text]="i18n.t('welcome.f4.text')" class="card-text" textWrap="true"></Label>
+          </StackLayout>
+        </GridLayout>
       </StackLayout>
 
     </StackLayout>
   </ScrollView>
 
   <StackLayout row="1" class="footer">
-    <Button text="Get started" class="btn btn-primary" (tap)="start()"></Button>
+    <Button [text]="i18n.t('welcome.start')" class="btn btn-primary btn-wide" (tap)="start()"></Button>
   </StackLayout>
 </GridLayout>

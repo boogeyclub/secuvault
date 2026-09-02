@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- French launcher / task-switcher label. -->
+    <string name="app_name">SecuVault</string>
+    <string name="title_activity_kimera">SecuVault</string>
+</resources>

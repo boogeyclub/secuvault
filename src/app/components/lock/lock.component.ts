@@ -6,6 +6,8 @@ import { PinPadComponent } from '../pin-pad/pin-pad.component';
 import { PatternLockComponent } from '../pattern-lock/pattern-lock.component';
 import { LockService } from '../../services/lock.service';
 import { VaultService } from '../../services/vault.service';
+import { I18nService } from '../../i18n/i18n.service';
+import { ICON } from '../../ui/icons';
 
 /**
  * Lock screen. Adapts to the active lock method:
@@ -23,6 +25,8 @@ export class LockComponent implements OnInit {
   private lock = inject(LockService);
   private vault = inject(VaultService);
   private router = inject(RouterExtensions);
+  readonly i18n = inject(I18nService);
+  readonly ic = ICON;
 
   readonly method = this.lock.method;
   readonly bioAvailable = this.lock.bioAvailable;
@@ -56,14 +60,14 @@ export class LockComponent implements OnInit {
 
   titleText(): string {
     const m = this.method();
-    if (m === 'password') return 'Enter your password';
-    if (m === 'pin') return 'Enter your PIN';
-    return 'Draw your pattern';
+    if (m === 'password') return this.i18n.t('lock.prompt.password');
+    if (m === 'pin') return this.i18n.t('lock.prompt.pin');
+    return this.i18n.t('lock.prompt.pattern');
   }
 
   methodLabel(): string {
     const m = this.method();
-    return m === 'password' ? 'password' : m === 'pin' ? 'PIN' : 'pattern';
+    return this.i18n.t(m === 'password' ? 'method.password' : m === 'pin' ? 'method.pin' : 'method.pattern');
   }
 
   async tryBio(): Promise<void> {
@@ -75,7 +79,7 @@ export class LockComponent implements OnInit {
       this.error.set('');
       this.router.navigate(['/vault'], { clearHistory: true });
     } else if (res === 'failed' && this.lock.bioEnabled()) {
-      this.error.set('Fingerprint not recognized — use your ' + this.methodLabel() + '.');
+      this.error.set(this.i18n.t('lock.bio.failed', { method: this.methodLabel() }));
     }
   }
 
@@ -101,7 +105,9 @@ export class LockComponent implements OnInit {
       this.startCooldown();
       return;
     }
-    this.error.set('Wrong ' + this.methodLabel() + '. ' + this.lock.failsLeft() + ' attempt(s) left.');
+    this.error.set(
+      this.i18n.t('lock.wrong', { method: this.methodLabel(), n: this.lock.failsLeft() })
+    );
     this.password = '';
     this.pinEntered.set('');
     this.patternDraft.set('');
@@ -136,6 +142,10 @@ export class LockComponent implements OnInit {
     return out;
   }
 
+  cooldownText(): string {
+    return this.i18n.t('lock.cooldown', { s: this.cooldownSecs() });
+  }
+
   private startCooldown(): void {
     const tick = () => {
       const left = Math.ceil(this.lock.cooldownRemaining() / 1000);
@@ -153,11 +163,10 @@ export class LockComponent implements OnInit {
 
   async resetVault(): Promise<void> {
     const ok = await Dialogs.confirm({
-      title: 'Reset SecuVault',
-      message:
-        'You will lose your lock AND every file inside the vault. There is no way to undo this. Continue?',
-      okButtonText: 'Erase everything',
-      cancelButtonText: 'Cancel',
+      title: this.i18n.t('lock.reset.title'),
+      message: this.i18n.t('lock.reset.msg'),
+      okButtonText: this.i18n.t('lock.reset.ok'),
+      cancelButtonText: this.i18n.t('common.cancel'),
     });
     if (!ok) return;
     await this.vault.eraseAll();

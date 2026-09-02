@@ -38,28 +38,6 @@ export function categoryOf(name: string): Category {
   return 'other';
 }
 
-export function categoryCode(c: Category): string {
-  switch (c) {
-    case 'image': return 'IMG';
-    case 'video': return 'VID';
-    case 'audio': return 'AUD';
-    case 'document': return 'DOC';
-    case 'archive': return 'ZIP';
-    default: return 'FILE';
-  }
-}
-
-export function categoryLabel(c: Category): string {
-  switch (c) {
-    case 'image': return 'Image';
-    case 'video': return 'Video';
-    case 'audio': return 'Audio';
-    case 'document': return 'Document';
-    case 'archive': return 'Archive';
-    default: return 'File';
-  }
-}
-
 export function mimeFor(entry: VaultEntry): string {
   const ext = entry.ext ? entry.ext.substring(1) : '';
   const map: Record<string, string> = {
@@ -80,22 +58,10 @@ export function mimeFor(entry: VaultEntry): string {
   return map[ext] || 'application/octet-stream';
 }
 
-export function fmtBytes(n: number): string {
-  if (!n || n < 0) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  let i = 0;
-  let v = n;
-  while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
-  return (i === 0 ? v.toFixed(0) : v.toFixed(1)) + ' ' + units[i];
-}
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-export function fmtDate(ts: number): string {
-  const d = new Date(ts);
-  const pad = (x: number) => (x < 10 ? '0' + x : '' + x);
-  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} · ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
+/**
+ * NOTE: human-readable formatting (byte sizes, dates, category
+ * labels) lives in I18nService so it follows the app language.
+ */
 
 /** Removes characters that are unsafe in file names (path separators, control chars). */
 export function sanitizeName(name: string): string {
