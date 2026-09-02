@@ -33,6 +33,19 @@
         <activity
             android:name="com.tns.ErrorReportActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+
+        <!-- Required by Utils.openFile() (Android >= 24): serves vault
+             files to other apps via content:// URIs instead of file://
+             paths, which are forbidden across apps since API 24. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.secuvault.app.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
     </application>
 
 </manifest>

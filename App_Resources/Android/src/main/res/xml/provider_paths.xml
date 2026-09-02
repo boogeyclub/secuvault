@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Roots exposed by the FileProvider (authority: com.secuvault.app.provider).
+
+    The vault stores files under knownFolders.currentApp()/vault/files,
+    which on Android resolves to <filesDir>/app/vault/files - so
+    files-path with path="." (the whole filesDir tree) covers it.
+    cache-path is declared as a safety net for any temp file.
+-->
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <files-path
+        name="app_files"
+        path="."/>
+    <cache-path
+        name="app_cache"
+        path="."/>
+</paths>
