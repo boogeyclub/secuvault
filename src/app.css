@@ -406,6 +406,36 @@ Page {
 
 .vault-title { font-size: 21; font-weight: 800; color: #34E8AC; }
 
+/* ---------- home / dashboard ---------- */
+
+.files-card { padding: 16; }
+.files-ic {
+  width: 52;
+  height: 52;
+  border-radius: 15;
+  background-color: #17221D;
+  vertical-align: center;
+}
+.files-ic-on { background-color: #143529; }
+.ic-dim { color: #668074; }
+
+.mini-chip {
+  border-radius: 999;
+  padding: 4 9;
+  margin: 0 6 6 0;
+}
+.mini-chip-n { font-size: 11; font-weight: 800; color: #ECF5F0; }
+
+.action-tile {
+  background-color: #121A16;
+  border-radius: 18;
+  border-width: 1;
+  border-color: #223129;
+  padding: 16 10;
+}
+.action-tile-accent { background-color: #12271E; border-color: #1F5C46; }
+.action-tile-label { font-size: 13; font-weight: 700; color: #ECF5F0; margin-top: 8; }
+
 /* ---------- detail ---------- */
 
 .detail-image { border-radius: 18; height: 320; }

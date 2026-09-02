@@ -3,6 +3,7 @@ import { PageRouterOutlet } from '@nativescript/angular';
 import { RouterExtensions } from '@nativescript/angular';
 import { Application, isAndroid } from '@nativescript/core';
 import { LockService } from './services/lock.service';
+import { PickerService } from './services/picker.service';
 import { I18nService } from './i18n/i18n.service';
 
 @Component({
@@ -14,6 +15,7 @@ import { I18nService } from './i18n/i18n.service';
 export class AppComponent implements OnInit {
   private router = inject(RouterExtensions);
   private lock = inject(LockService);
+  private picker = inject(PickerService);
   private i18n = inject(I18nService);
 
   ngOnInit(): void {
@@ -33,9 +35,18 @@ export class AppComponent implements OnInit {
       }
     }
 
-    // Auto-lock when the app comes back to the foreground after being
-    // away for longer than the grace period (see LockService).
-    Application.on(Application.suspendEvent, () => this.lock.onBackground());
+    // Security policy: the vault locks on EVERY minimize/close. The
+    // only exception is a background stint caused by the system
+    // document picker we launched ourselves - arming the
+    // suppression here (during suspend) because the picker result
+    // arrives before resumeEvent fires.
+    Application.on(Application.suspendEvent, () => {
+      if (this.picker.isActive) {
+        this.lock.suppressNextResumeLock();
+        return;
+      }
+      this.lock.onBackground();
+    });
     Application.on(Application.resumeEvent, () => {
       if (this.lock.onResumeShouldLock()) {
         this.router.navigate(['/lock'], { clearHistory: true });

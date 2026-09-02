@@ -99,6 +99,22 @@ export const en = {
     'You will lose your lock AND every file inside the vault. There is no way to undo this. Continue?',
   'lock.reset.ok': 'Erase everything',
 
+  // ---------- home / dashboard ----------
+  'home.title': 'Home',
+  'home.subtitle': 'Your vault at a glance',
+  'home.section.access': 'ACCESS',
+  'home.section.quick': 'QUICK ACTIONS',
+  'home.section.manage': 'MANAGE',
+  'home.section.protection': 'PROTECTION',
+  'home.files.title': 'Files',
+  'home.files.empty': 'Nothing imported yet',
+  'home.files.open': 'Browse files',
+  'home.action.lock': 'Lock now',
+  'home.row.changeLock': 'Change lock',
+  'home.row.changeLockHint': 'Method or secret.',
+  'home.protection.autolock': 'Locks every time the app is minimized or closed.',
+  'home.protection.bio': 'Fingerprint unlock is on.',
+
   // ---------- vault ----------
   'vault.count_one': '{n} item',
   'vault.count_other': '{n} items',
@@ -279,6 +295,22 @@ export const fr: Record<TranslationKey, string> = {
   'lock.reset.msg':
     'Vous perdrez votre verrou ET tous les fichiers du coffre. Impossible d’annuler. Continuer ?',
   'lock.reset.ok': 'Tout effacer',
+
+  // ---------- home / dashboard ----------
+  'home.title': 'Accueil',
+  'home.subtitle': 'Votre coffre en un coup d’œil',
+  'home.section.access': 'ACCÈS',
+  'home.section.quick': 'ACTIONS RAPIDES',
+  'home.section.manage': 'GÉRER',
+  'home.section.protection': 'PROTECTION',
+  'home.files.title': 'Fichiers',
+  'home.files.empty': 'Rien d’importé pour l’instant',
+  'home.files.open': 'Parcourir les fichiers',
+  'home.action.lock': 'Verrouiller',
+  'home.row.changeLock': 'Changer le verrou',
+  'home.row.changeLockHint': 'Méthode ou secret.',
+  'home.protection.autolock': 'Verrouille à chaque mise en arrière-plan ou fermeture.',
+  'home.protection.bio': 'Le déverrouillage par empreinte est activé.',
 
   // ---------- vault ----------
   'vault.count_one': '{n} élément',

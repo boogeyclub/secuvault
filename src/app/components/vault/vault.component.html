@@ -2,15 +2,18 @@
 
   <!-- Header -->
   <StackLayout row="0" class="top-bar">
-    <GridLayout rows="auto" columns="*,auto,auto">
-      <StackLayout col="0" orientation="horizontal">
+    <GridLayout rows="auto" columns="auto,*,auto,auto">
+      <GridLayout col="0" class="icon-btn" (tap)="goHome()">
+        <Label [text]="ic.arrowLeft" class="ic ic-22"></Label>
+      </GridLayout>
+      <StackLayout col="1" orientation="horizontal" marginLeft="10">
         <Label [text]="ic.shieldLock" class="ic ic-accent ic-26" verticalAlignment="center"></Label>
         <Label [text]="i18n.t('common.appName')" class="vault-title" marginLeft="8" verticalAlignment="center"></Label>
       </StackLayout>
-      <GridLayout col="1" class="icon-btn" marginLeft="8" (tap)="lockNow()">
+      <GridLayout col="2" class="icon-btn" marginLeft="8" (tap)="lockNow()">
         <Label [text]="ic.lock" class="ic ic-20"></Label>
       </GridLayout>
-      <GridLayout col="2" class="icon-btn" marginLeft="8" (tap)="openSettings()">
+      <GridLayout col="3" class="icon-btn" marginLeft="8" (tap)="openSettings()">
         <Label [text]="ic.settings" class="ic ic-20"></Label>
       </GridLayout>
     </GridLayout>

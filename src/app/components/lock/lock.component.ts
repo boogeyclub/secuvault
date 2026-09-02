@@ -77,7 +77,7 @@ export class LockComponent implements OnInit {
     this.busy.set(false);
     if (res === 'ok') {
       this.error.set('');
-      this.router.navigate(['/vault'], { clearHistory: true });
+      this.router.navigate(['/home'], { clearHistory: true });
     } else if (res === 'failed' && this.lock.bioEnabled()) {
       this.error.set(this.i18n.t('lock.bio.failed', { method: this.methodLabel() }));
     }
@@ -98,7 +98,7 @@ export class LockComponent implements OnInit {
 
     if (ok) {
       this.error.set('');
-      this.router.navigate(['/vault'], { clearHistory: true });
+      this.router.navigate(['/home'], { clearHistory: true });
       return;
     }
     if (this.lock.cooldownRemaining() > 0) {

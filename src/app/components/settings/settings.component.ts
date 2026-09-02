@@ -63,7 +63,7 @@ export class SettingsComponent {
     });
     if (!ok) return;
     await this.vault.eraseAll();
-    this.router.navigate(['/vault'], { clearHistory: true });
+    this.router.navigate(['/home'], { clearHistory: true });
   }
 
   async resetApp(): Promise<void> {
@@ -80,6 +80,6 @@ export class SettingsComponent {
   }
 
   back(): void {
-    this.router.navigate(['/vault'], { clearHistory: true });
+    this.router.navigate(['/home'], { clearHistory: true });
   }
 }

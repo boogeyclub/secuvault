@@ -1,0 +1,117 @@
+<GridLayout rows="auto,*" class="page">
+
+  <!-- Top bar -->
+  <StackLayout row="0" class="top-bar">
+    <GridLayout rows="auto" columns="*,auto">
+      <StackLayout col="0" orientation="horizontal">
+        <Label [text]="ic.shieldLock" class="ic ic-accent ic-26" verticalAlignment="center"></Label>
+        <Label [text]="i18n.t('common.appName')" class="vault-title" marginLeft="8" verticalAlignment="center"></Label>
+      </StackLayout>
+      <GridLayout col="1" class="icon-btn" (tap)="lockNow()">
+        <Label [text]="ic.lock" class="ic ic-20"></Label>
+      </GridLayout>
+    </GridLayout>
+    <Label [text]="i18n.t('home.subtitle')" class="top-bar-sub"></Label>
+  </StackLayout>
+
+  <ScrollView row="1">
+    <StackLayout class="p-lg">
+
+      <!-- ACCESS: the vault files -->
+      <Label [text]="i18n.t('home.section.access')" class="eyebrow"></Label>
+      <GridLayout rows="auto" columns="auto,*,auto" class="card files-card" (tap)="openFiles()">
+        <GridLayout col="0" class="files-ic" [class]="entries().length === 0 ? '' : 'files-ic-on'">
+          <Label [text]="ic.database" class="ic ic-26" [class.ic-accent]="entries().length > 0" [class.ic-dim]="entries().length === 0"></Label>
+        </GridLayout>
+        <StackLayout col="1" marginLeft="14">
+          <Label [text]="i18n.t('home.files.title')" class="card-title"></Label>
+          <Label [text]="filesSummary()" class="card-text"></Label>
+          @if (presentCategories().length > 0) {
+            <FlexboxLayout flexWrap="wrap" marginTop="8">
+              @for (c of presentCategories(); track c) {
+                <StackLayout orientation="horizontal" class="mini-chip" [class]="catClass(c)">
+                  <Label [text]="catIcon(c)" class="ic ic-16"></Label>
+                  <Label [text]="countOf(c)" class="mini-chip-n" marginLeft="4"></Label>
+                </StackLayout>
+              }
+            </FlexboxLayout>
+          }
+        </StackLayout>
+        <Label col="2" [text]="ic.chevronRight" class="ic ic-20 chev" verticalAlignment="center"></Label>
+      </GridLayout>
+
+      <!-- QUICK ACTIONS -->
+      <Label [text]="i18n.t('home.section.quick')" class="eyebrow" marginTop="18"></Label>
+      <GridLayout columns="*,*" marginTop="2">
+        <GridLayout col="0" rows="auto,auto" class="action-tile action-tile-accent" marginRight="5" (tap)="addFiles()">
+          <Label row="0" [text]="ic.plus" class="ic ic-26 ic-accent" horizontalAlignment="center"></Label>
+          <Label row="1" [text]="i18n.t('vault.add')" class="action-tile-label" horizontalAlignment="center"></Label>
+        </GridLayout>
+        <GridLayout col="1" rows="auto,auto" class="action-tile" marginLeft="5" (tap)="lockNow()">
+          <Label row="0" [text]="ic.lock" class="ic ic-26" horizontalAlignment="center"></Label>
+          <Label row="1" [text]="i18n.t('home.action.lock')" class="action-tile-label" horizontalAlignment="center"></Label>
+        </GridLayout>
+      </GridLayout>
+
+      <!-- MANAGE -->
+      <Label [text]="i18n.t('home.section.manage')" class="eyebrow" marginTop="18"></Label>
+      <StackLayout class="card card-list">
+        <GridLayout rows="auto" columns="auto,*,auto" class="setting-row" (tap)="openSettings()">
+          <GridLayout col="0" class="method-ic">
+            <Label [text]="ic.settings" class="ic ic-accent ic-22"></Label>
+          </GridLayout>
+          <StackLayout col="1" marginLeft="12">
+            <Label [text]="i18n.t('settings.title')" class="card-title"></Label>
+            <Label [text]="i18n.t('settings.lock.changeHint')" class="card-text" textWrap="true"></Label>
+          </StackLayout>
+          <Label col="2" [text]="ic.chevronRight" class="ic ic-20 chev"></Label>
+        </GridLayout>
+
+        <GridLayout rows="auto" columns="auto,*,auto" class="setting-row" (tap)="changeLock()">
+          <GridLayout col="0" class="method-ic">
+            <Label [text]="methodIcon()" class="ic ic-accent ic-22"></Label>
+          </GridLayout>
+          <StackLayout col="1" marginLeft="12">
+            <Label [text]="i18n.t('home.row.changeLock')" class="card-title"></Label>
+            <Label [text]="i18n.t('home.row.changeLockHint')" class="card-text" textWrap="true"></Label>
+          </StackLayout>
+          <Label col="2" [text]="ic.chevronRight" class="ic ic-20 chev"></Label>
+        </GridLayout>
+
+        <GridLayout rows="auto" columns="auto,*,auto" class="setting-row setting-row-last">
+          <GridLayout col="0" class="method-ic">
+            <Label [text]="ic.translate" class="ic ic-accent ic-22"></Label>
+          </GridLayout>
+          <Label col="1" [text]="i18n.t('lang.label')" class="card-title" marginLeft="12" verticalAlignment="center"></Label>
+          <GridLayout col="2">
+            <app-lang-toggle></app-lang-toggle>
+          </GridLayout>
+        </GridLayout>
+      </StackLayout>
+
+      <!-- PROTECTION -->
+      <Label [text]="i18n.t('home.section.protection')" class="eyebrow" marginTop="18"></Label>
+      <StackLayout class="card">
+        <GridLayout rows="auto" columns="auto,*">
+          <Label col="0" [text]="ic.lockOutline" class="ic ic-18 ic-accent" verticalAlignment="top"></Label>
+          <Label col="1" [text]="i18n.t('home.protection.autolock')" class="card-text" textWrap="true" marginLeft="12"></Label>
+        </GridLayout>
+        <GridLayout rows="auto" columns="auto,*" marginTop="8">
+          <Label col="0" [text]="ic.security" class="ic ic-18 ic-accent" verticalAlignment="top"></Label>
+          <Label col="1" [text]="i18n.t('settings.privacy.p1')" class="card-text" textWrap="true" marginLeft="12"></Label>
+        </GridLayout>
+        <GridLayout rows="auto" columns="auto,*" marginTop="8">
+          <Label col="0" [text]="ic.lockReset" class="ic ic-18 ic-accent" verticalAlignment="top"></Label>
+          <Label col="1" [text]="i18n.t('settings.privacy.p3')" class="card-text" textWrap="true" marginLeft="12"></Label>
+        </GridLayout>
+        @if (bioAvailable() && bioEnabled()) {
+          <GridLayout rows="auto" columns="auto,*" marginTop="8">
+            <Label col="0" [text]="ic.fingerprint" class="ic ic-18 ic-accent" verticalAlignment="top"></Label>
+            <Label col="1" [text]="i18n.t('home.protection.bio')" class="card-text" textWrap="true" marginLeft="12"></Label>
+          </GridLayout>
+        }
+      </StackLayout>
+
+    </StackLayout>
+  </ScrollView>
+</GridLayout>

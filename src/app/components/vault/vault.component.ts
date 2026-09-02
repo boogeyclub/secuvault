@@ -89,6 +89,11 @@ export class VaultComponent implements OnInit {
 
   ngOnInit(): void {
     this.vault.init();
+    // Handoff from the dashboard quick action: open the picker
+    // right after this screen appears.
+    if (this.vault.consumeAutoAdd()) {
+      setTimeout(() => this.addFiles(), 150);
+    }
   }
 
   // ---------- display helpers ----------
@@ -298,6 +303,10 @@ export class VaultComponent implements OnInit {
 
   openSettings(): void {
     this.router.navigate(['/settings']);
+  }
+
+  goHome(): void {
+    this.router.navigate(['/home'], { clearHistory: true });
   }
 
   thumbOf(e: VaultEntry): string {

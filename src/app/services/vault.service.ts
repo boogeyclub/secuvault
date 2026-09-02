@@ -34,6 +34,7 @@ export class VaultService {
   private thumbsFolder: Folder;
   private indexFile: File;
   private initialized = false;
+  private autoAddRequested = false;
 
   constructor() {
     this.vaultFolder = knownFolders.currentApp().getFolder('vault');
@@ -73,6 +74,20 @@ export class VaultService {
 
   filePathOf(entry: VaultEntry): string {
     return this.filesFolder.getFile(entry.id + (entry.ext || '')).path;
+  }
+
+  /**
+   * Cross-screen handoff: the dashboard asks for the system picker
+   * to be opened as soon as the vault screen is shown.
+   */
+  requestAutoAdd(): void {
+    this.autoAddRequested = true;
+  }
+
+  consumeAutoAdd(): boolean {
+    const v = this.autoAddRequested;
+    this.autoAddRequested = false;
+    return v;
   }
 
   thumbPathOf(entry: VaultEntry): string {
