@@ -17,7 +17,7 @@ const K_COOLDOWN = 'sv.cooldown';
  * Owns the app lock: the current method (password / PIN / pattern),
  * secret verification (salted & iterated SHA-256), biometric unlock,
  * brute-force protection (5 attempts -> 30 s cooldown) and the
- * auto-lock-on-resume behaviour.
+ * lock-on-every-minimize behaviour (no grace period).
  */
 @Injectable({ providedIn: 'root' })
 export class LockService {
@@ -38,11 +38,11 @@ export class LockService {
 
   static readonly MAX_FAILS = 5;
   static readonly COOLDOWN_MS = 30000;
-  static readonly RESUME_GRACE_MS = 60000;
 
   private ss = new SecureStorage();
   private bio = new BiometricAuth();
   private pausedAt = 0;
+  private skipNextResumeLock = false;
 
   /** (Re)loads persisted state. Call on app start and after setup changes. */
   init(): void {
@@ -164,16 +164,37 @@ export class LockService {
     this.unlocked.set(false);
   }
 
+  /**
+   * The vault locks on EVERY background stint - there is no grace
+   * period. Called from the app-level suspend handler.
+   */
   onBackground(): void {
     this.pausedAt = Date.now();
+    this.lock();
   }
 
-  /** Locks the vault if the app was away longer than the grace period. */
+  /**
+   * One-shot: do not lock on the next resume. Used when the app was
+   * only backgrounded by an in-flight system flow we started
+   * ourselves (the document picker) - the user has not left the
+   * workflow, so demanding the secret would interrupt it.
+   */
+  suppressNextResumeLock(): void {
+    this.skipNextResumeLock = true;
+  }
+
+  /**
+   * True when returning from the background requires the secret
+   * again - which is always, unless the stint was suppressed
+   * (picker round-trip) or the vault is not set up / unlocked.
+   */
   onResumeShouldLock(): boolean {
-    if (!this.unlocked() || !this.isSetup()) return false;
-    if (!this.pausedAt || Date.now() - this.pausedAt < LockService.RESUME_GRACE_MS) return false;
-    this.lock();
-    return true;
+    if (this.skipNextResumeLock) {
+      this.skipNextResumeLock = false;
+      return false;
+    }
+    if (!this.isSetup()) return false;
+    return this.pausedAt > 0;
   }
 
   /** Remaining cooldown in ms (0 when none). */

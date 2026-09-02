@@ -1,51 +1,77 @@
-<GridLayout rows="auto,*" class="page">
-  <GridLayout row="0" rows="auto" columns="auto,*,auto" class="header">
-    <Label col="0" text="‹" class="header-back" (tap)="back()"></Label>
-    <Label col="1" [text]="title()" class="header-title"></Label>
-    <Label col="2" text="" class="header-back"></Label>
+<GridLayout rows="auto,*,auto" class="page">
+
+  <!-- Top bar -->
+  <GridLayout row="0" rows="auto,auto" columns="auto,*,auto" class="top-bar">
+    <GridLayout col="0" class="icon-btn" (tap)="back()">
+      <Label [text]="ic.arrowLeft" class="ic ic-22"></Label>
+    </GridLayout>
+    <Label col="1" [text]="title()" class="top-bar-title" verticalAlignment="center"></Label>
+    <Label col="2" text="" width="40"></Label>
+
+    <!-- Step indicator -->
+    <GridLayout col="0" colSpan="3" row="1" columns="*,*,*" marginTop="12">
+      <StackLayout col="0" marginRight="4">
+        <GridLayout class="step" [class.step-on]="stepIndex() >= 0"></GridLayout>
+        <Label [text]="stepLabel(0)" class="step-label" [class.step-label-on]="stepIndex() === 0" marginTop="5"></Label>
+      </StackLayout>
+      <StackLayout col="1" margin="0 4">
+        <GridLayout class="step" [class.step-on]="stepIndex() >= 1"></GridLayout>
+        <Label [text]="stepLabel(1)" class="step-label" [class.step-label-on]="stepIndex() === 1" marginTop="5"></Label>
+      </StackLayout>
+      <StackLayout col="2" marginLeft="4">
+        <GridLayout class="step" [class.step-on]="stepIndex() >= 2"></GridLayout>
+        <Label [text]="stepLabel(2)" class="step-label" [class.step-label-on]="stepIndex() === 2" marginTop="5"></Label>
+      </StackLayout>
+    </GridLayout>
   </GridLayout>
 
   <ScrollView row="1">
     <StackLayout class="p-lg">
 
-      <Label [text]="subtitle()" class="body muted center" textWrap="true"></Label>
+      <Label [text]="subtitle()" class="body muted center" textWrap="true" marginBottom="6"></Label>
 
       <!-- STEP 1: choose the method -->
       @if (step() === 'method') {
-        <StackLayout marginTop="24">
+        <StackLayout marginTop="18">
 
           <GridLayout rows="auto" columns="auto,*,auto" class="card method-card" [class.method-selected]="chosen() === 'password'" (tap)="choose('password')">
-            <Label col="0" text="🔑" class="method-icon"></Label>
-            <StackLayout col="1">
-              <Label text="Password" class="card-title"></Label>
-              <Label text="Words, numbers and symbols. Strongest option." class="body muted" textWrap="true"></Label>
+            <GridLayout col="0" class="method-ic">
+              <Label [text]="methodIcon('password')" class="ic ic-accent ic-22" [class.muted]="chosen() !== 'password'"></Label>
+            </GridLayout>
+            <StackLayout col="1" marginLeft="12">
+              <Label [text]="methodLabel('password')" class="card-title"></Label>
+              <Label [text]="methodHint('password')" class="card-text" textWrap="true"></Label>
             </StackLayout>
-            <Label col="2" [text]="chosen() === 'password' ? '●' : '○'" class="radio"></Label>
+            <Label col="2" [text]="ic.check" class="radio" [class.radio-on]="chosen() === 'password'"></Label>
           </GridLayout>
 
           <GridLayout rows="auto" columns="auto,*,auto" class="card method-card" [class.method-selected]="chosen() === 'pin'" (tap)="choose('pin')">
-            <Label col="0" text="🔢" class="method-icon"></Label>
-            <StackLayout col="1">
-              <Label text="PIN code" class="card-title"></Label>
-              <Label text="A fast 4–6 digit numeric code." class="body muted" textWrap="true"></Label>
+            <GridLayout col="0" class="method-ic">
+              <Label [text]="methodIcon('pin')" class="ic ic-accent ic-22" [class.muted]="chosen() !== 'pin'"></Label>
+            </GridLayout>
+            <StackLayout col="1" marginLeft="12">
+              <Label [text]="methodLabel('pin')" class="card-title"></Label>
+              <Label [text]="methodHint('pin')" class="card-text" textWrap="true"></Label>
             </StackLayout>
-            <Label col="2" [text]="chosen() === 'pin' ? '●' : '○'" class="radio"></Label>
+            <Label col="2" [text]="ic.check" class="radio" [class.radio-on]="chosen() === 'pin'"></Label>
           </GridLayout>
 
           <GridLayout rows="auto" columns="auto,*,auto" class="card method-card" [class.method-selected]="chosen() === 'pattern'" (tap)="choose('pattern')">
-            <Label col="0" text="✳" class="method-icon"></Label>
-            <StackLayout col="1">
-              <Label text="Pattern" class="card-title"></Label>
-              <Label text="Draw a shape on the 3×3 dot grid." class="body muted" textWrap="true"></Label>
+            <GridLayout col="0" class="method-ic">
+              <Label [text]="methodIcon('pattern')" class="ic ic-accent ic-22" [class.muted]="chosen() !== 'pattern'"></Label>
+            </GridLayout>
+            <StackLayout col="1" marginLeft="12">
+              <Label [text]="methodLabel('pattern')" class="card-title"></Label>
+              <Label [text]="methodHint('pattern')" class="card-text" textWrap="true"></Label>
             </StackLayout>
-            <Label col="2" [text]="chosen() === 'pattern' ? '●' : '○'" class="radio"></Label>
+            <Label col="2" [text]="ic.check" class="radio" [class.radio-on]="chosen() === 'pattern'"></Label>
           </GridLayout>
 
           @if (!changeMode() && bioAvailable()) {
             <GridLayout rows="auto" columns="*,auto" class="card bio-card">
               <StackLayout col="0">
-                <Label text="Fingerprint unlock" class="card-title"></Label>
-                <Label text="Also unlock with your phone's fingerprint." class="body muted" textWrap="true"></Label>
+                <Label [text]="i18n.t('setup.bio.title')" class="card-title"></Label>
+                <Label [text]="i18n.t('setup.bio.hint')" class="card-text" textWrap="true"></Label>
               </StackLayout>
               <Switch col="1" [checked]="useBio()" (checkedChange)="useBio.set($any($event).object.checked)"></Switch>
             </GridLayout>
@@ -55,18 +81,18 @@
 
       <!-- STEP 2: enter the secret -->
       @else if (step() === 'enter') {
-        <StackLayout marginTop="24" class="center">
+        <StackLayout marginTop="18" class="center">
           @if (chosen() === 'password') {
             <StackLayout class="enter-block">
               <TextField
                 [secure]="!showSecret()"
                 [text]="passwordFirst"
-                hint="Your password"
+                [hint]="i18n.t('setup.field.password')"
                 returnKeyType="done"
                 class="input"
                 (textChange)="onFirstPasswordChange($event)"></TextField>
               <Label
-                [text]="showSecret() ? 'Hide' : 'Show'"
+                [text]="showSecret() ? i18n.t('lock.hide') : i18n.t('lock.show')"
                 class="link right"
                 (tap)="showSecret.set(!showSecret())"></Label>
             </StackLayout>
@@ -86,7 +112,7 @@
           @if (chosen() === 'pattern') {
             <StackLayout class="enter-block">
               <app-pattern-lock #firstPattern (pattern)="onFirstPattern($event)"></app-pattern-lock>
-              <Label [text]="patternFirst.length + ' dot' + (patternFirst.length === 1 ? '' : 's') + ' selected'" class="body muted"></Label>
+              <Label [text]="patternDotsLabel(patternFirst.length)" class="body muted"></Label>
             </StackLayout>
           }
         </StackLayout>
@@ -94,18 +120,18 @@
 
       <!-- STEP 3: confirm -->
       @else {
-        <StackLayout marginTop="24" class="center">
+        <StackLayout marginTop="18" class="center">
           @if (chosen() === 'password') {
             <StackLayout class="enter-block">
               <TextField
                 [secure]="!showSecret()"
                 [text]="passwordConfirm"
-                hint="Repeat the password"
+                [hint]="i18n.t('setup.field.password2')"
                 returnKeyType="done"
                 class="input"
                 (textChange)="onConfirmPasswordChange($event)"></TextField>
               <Label
-                [text]="showSecret() ? 'Hide' : 'Show'"
+                [text]="showSecret() ? i18n.t('lock.hide') : i18n.t('lock.show')"
                 class="link right"
                 (tap)="showSecret.set(!showSecret())"></Label>
             </StackLayout>
@@ -125,7 +151,7 @@
           @if (chosen() === 'pattern') {
             <StackLayout class="enter-block">
               <app-pattern-lock #confirmPattern (pattern)="onConfirmPattern($event)"></app-pattern-lock>
-              <Label [text]="patternConfirm.length + ' dot' + (patternConfirm.length === 1 ? '' : 's') + ' selected'" class="body muted"></Label>
+              <Label [text]="patternDotsLabel(patternConfirm.length)" class="body muted"></Label>
             </StackLayout>
           }
         </StackLayout>
@@ -135,18 +161,19 @@
         <Label [text]="error()" class="error-text" textWrap="true"></Label>
       }
 
-      @if (step() === 'method') {
-        <Button text="Continue" class="btn btn-primary btn-wide" [isEnabled]="!!chosen()" (tap)="continueFromMethod()"></Button>
-      }
-      @else if (step() === 'enter') {
-        <Button text="Continue" class="btn btn-primary btn-wide" (tap)="continueFromEnter()"></Button>
-      }
-      @else {
-        <Button text="Save lock" class="btn btn-primary btn-wide" (tap)="finish()"></Button>
-      }
-
-      <Label text="Back" class="link center" (tap)="back()"></Label>
-
     </StackLayout>
   </ScrollView>
+
+  <!-- Pinned call-to-action -->
+  <StackLayout row="2" class="footer">
+    @if (step() === 'method') {
+      <Button [text]="i18n.t('setup.cta.continue')" class="btn btn-primary btn-wide" [isEnabled]="!!chosen()" (tap)="continueFromMethod()"></Button>
+    }
+    @else if (step() === 'enter') {
+      <Button [text]="i18n.t('setup.cta.continue')" class="btn btn-primary btn-wide" (tap)="continueFromEnter()"></Button>
+    }
+    @else {
+      <Button [text]="i18n.t('setup.cta.save')" class="btn btn-primary btn-wide" (tap)="finish()"></Button>
+    }
+  </StackLayout>
 </GridLayout>

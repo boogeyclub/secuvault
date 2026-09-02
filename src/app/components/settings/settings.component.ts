@@ -4,19 +4,23 @@ import { RouterExtensions } from '@nativescript/angular';
 import { Dialogs } from '@nativescript/core';
 import { LockService, LockMethod } from '../../services/lock.service';
 import { VaultService } from '../../services/vault.service';
-import { fmtBytes } from '../../models';
+import { I18nService } from '../../i18n/i18n.service';
+import { ICON } from '../../ui/icons';
+import { LangToggleComponent } from '../lang-toggle/lang-toggle.component';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
   templateUrl: './settings.component.html',
-  imports: [NativeScriptCommonModule, NativeScriptRouterModule],
+  imports: [NativeScriptCommonModule, NativeScriptRouterModule, LangToggleComponent],
   schemas: [NO_ERRORS_SCHEMA],
 })
 export class SettingsComponent {
   private lock = inject(LockService);
   private vault = inject(VaultService);
   private router = inject(RouterExtensions);
+  readonly i18n = inject(I18nService);
+  readonly ic = ICON;
 
   readonly method = this.lock.method;
   readonly bioAvailable = this.lock.bioAvailable;
@@ -25,11 +29,20 @@ export class SettingsComponent {
 
   methodLabel(): string {
     const m = this.method();
-    return m === 'password' ? 'Password' : m === 'pin' ? 'PIN code' : 'Pattern';
+    return this.i18n.t(
+      m === 'password' ? 'setup.method.password' : m === 'pin' ? 'setup.method.pin' : 'setup.method.pattern'
+    );
   }
 
-  bytesLabel(): string {
-    return fmtBytes(this.stats().bytes);
+  methodIcon(): string {
+    const m: LockMethod = this.method();
+    return m === 'password' ? this.ic.keyOutline : m === 'pin' ? this.ic.dialpad : this.ic.gesture;
+  }
+
+  storageLabel(): string {
+    return (
+      this.i18n.t('vault.count', { n: this.stats().count }) + '  ·  ' + this.i18n.fmtBytes(this.stats().bytes)
+    );
   }
 
   changeLock(): void {
@@ -43,23 +56,22 @@ export class SettingsComponent {
 
   async eraseAll(): Promise<void> {
     const ok = await Dialogs.confirm({
-      title: 'Erase the vault',
-      message: 'Permanently delete EVERY file in the vault? This cannot be undone.',
-      okButtonText: 'Erase all',
-      cancelButtonText: 'Cancel',
+      title: this.i18n.t('vault.erase.title'),
+      message: this.i18n.t('vault.erase.msg'),
+      okButtonText: this.i18n.t('vault.erase.ok'),
+      cancelButtonText: this.i18n.t('common.cancel'),
     });
     if (!ok) return;
     await this.vault.eraseAll();
-    this.router.navigate(['/vault'], { clearHistory: true });
+    this.router.navigate(['/home'], { clearHistory: true });
   }
 
   async resetApp(): Promise<void> {
     const ok = await Dialogs.confirm({
-      title: 'Reset SecuVault',
-      message:
-        'This removes your lock AND deletes every file in the vault. There is no way to undo this.',
-      okButtonText: 'Reset everything',
-      cancelButtonText: 'Cancel',
+      title: this.i18n.t('settings.reset.title'),
+      message: this.i18n.t('settings.reset.msg'),
+      okButtonText: this.i18n.t('settings.reset.ok'),
+      cancelButtonText: this.i18n.t('common.cancel'),
     });
     if (!ok) return;
     await this.vault.eraseAll();
@@ -68,6 +80,6 @@ export class SettingsComponent {
   }
 
   back(): void {
-    this.router.navigate(['/vault'], { clearHistory: true });
+    this.router.navigate(['/home'], { clearHistory: true });
   }
 }

@@ -1,8 +1,8 @@
-import { Component, NO_ERRORS_SCHEMA, EventEmitter, Output, signal, computed } from '@angular/core';
+import { Component, NO_ERRORS_SCHEMA, EventEmitter, Output, signal, computed, input } from '@angular/core';
 
-const SIDE = 280; // pattern area in dp
-const DOT = 52; // dot size in dp
-const CENTERS = [72, 140, 208]; // dot centers along both axes
+const SIDE = 282; // pattern area in dp
+const DOT = 54; // dot size in dp
+const CENTERS = [73, 141, 209]; // dot centers along both axes
 
 interface Dot {
   i: number; // 1..9 (1 = top-left, 9 = bottom-right)
@@ -29,25 +29,33 @@ interface Line {
 }
 
 /**
- * Tap-based 3x3 pattern lock (no canvas needed - pure views).
- * Tap dots in order; tapping an earlier dot again truncates the
- * pattern. Emits the current sequence (e.g. "1596") on every change.
+ * Tap-based 3x3 pattern lock (pure views, no canvas).
+ * Tap dots in order; tapping an earlier dot truncates the
+ * pattern. Emits the current sequence (e.g. "1596") on change.
+ * Set `error` to flash the drawing in red (failed attempt).
  */
 @Component({
   selector: 'app-pattern-lock',
   standalone: true,
   template: `
-    <GridLayout width="{{SIDE}}" height="{{SIDE}}" class="pattern-area">
+    <GridLayout [width]="side" [height]="side" class="pattern-area">
       <AbsoluteLayout>
         @for (l of lines(); track l.key) {
-          <Label class="pattern-line" [left]="l.left" [top]="l.top" [width]="l.width" height="3" [rotate]="l.angle"></Label>
+          <Label
+            class="pattern-line"
+            [class.pattern-line-err]="error()"
+            [left]="l.left"
+            [top]="l.top"
+            [width]="l.width"
+            height="4"
+            [rotate]="l.angle"></Label>
         }
         @for (d of dots; track d.i) {
           <GridLayout
             [left]="d.left"
             [top]="d.top"
-            width="52"
-            height="52"
+            [width]="dotSize"
+            [height]="dotSize"
             class="dot"
             [class.dot-selected]="isSelected(d.i)"
             [class.dot-last]="last() === d.i"
@@ -66,8 +74,12 @@ interface Line {
 export class PatternLockComponent {
   @Output() pattern = new EventEmitter<string>();
 
+  /** Flash the pattern red while the parent reports a failure. */
+  readonly error = input(false);
+
   readonly dots = DOTS;
-  readonly SIDE = SIDE;
+  readonly side = SIDE;
+  readonly dotSize = DOT;
 
   readonly selected = signal<number[]>([]);
 

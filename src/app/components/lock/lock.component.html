@@ -1,10 +1,11 @@
 <GridLayout rows="auto,*" class="page">
+
   <StackLayout row="0" class="center lock-header">
-    <GridLayout class="logo-badge" width="72" height="72" borderRadius="20">
-      <Label text="🔐" class="logo-glyph"></Label>
+    <GridLayout class="logo-badge" width="84" height="84" borderRadius="24">
+      <Label [text]="ic.shieldLock" class="ic ic-accent" fontSize="38"></Label>
     </GridLayout>
-    <Label text="SecuVault" class="h2 title-accent" marginTop="12"></Label>
-    <Label [text]="titleText()" class="body muted"></Label>
+    <Label [text]="i18n.t('common.appName')" class="h2 title-accent" marginTop="14"></Label>
+    <Label [text]="titleText()" class="footnote muted" marginTop="2"></Label>
   </StackLayout>
 
   <ScrollView row="1">
@@ -15,15 +16,22 @@
           <TextField
             [secure]="!showPassword()"
             [text]="password"
-            hint="Password"
+            [hint]="i18n.t('lock.field.password')"
             returnKeyType="done"
             class="input"
             (textChange)="onPasswordChange($event)"></TextField>
-          <Label
-            [text]="showPassword() ? 'Hide' : 'Show'"
-            class="link right"
-            (tap)="showPassword.set(!showPassword())"></Label>
-          <Button text="Unlock" class="btn btn-primary btn-wide" [isEnabled]="password.length >= 1 && !busy()" (tap)="submit()"></Button>
+          <GridLayout columns="*,auto" marginTop="4">
+            <Label col="0" text=""></Label>
+            <GridLayout col="1" orientation="horizontal" (tap)="showPassword.set(!showPassword())">
+              <Label [text]="showPassword() ? ic.eyeOff : ic.eye" class="ic ic-18 muted" verticalAlignment="center"></Label>
+              <Label
+                [text]="showPassword() ? i18n.t('lock.hide') : i18n.t('lock.show')"
+                class="link"
+                marginLeft="4"
+                verticalAlignment="center"></Label>
+            </GridLayout>
+          </GridLayout>
+          <Button [text]="i18n.t('lock.unlock')" class="btn btn-primary btn-wide" [isEnabled]="password.length >= 1 && !busy()" (tap)="submit()"></Button>
         </StackLayout>
       }
 
@@ -40,23 +48,35 @@
 
       @if (method() === 'pattern') {
         <StackLayout class="center">
-          <app-pattern-lock #pattern (pattern)="onPattern($event)"></app-pattern-lock>
-          <Button text="Unlock" class="btn btn-primary btn-wide" [isEnabled]="patternDraft().length >= 4 && !busy()" (tap)="submit()"></Button>
+          <app-pattern-lock #pattern [error]="error() !== ''" (pattern)="onPattern($event)"></app-pattern-lock>
+          <Button [text]="i18n.t('lock.unlock')" class="btn btn-primary btn-wide" [isEnabled]="patternDraft().length >= 4 && !busy()" (tap)="submit()"></Button>
         </StackLayout>
       }
 
       @if (cooldownSecs() > 0) {
-        <Label [text]="'Too many attempts. Try again in ' + cooldownSecs() + 's'" class="error-text" textWrap="true"></Label>
+        <GridLayout columns="auto,*" class="banner banner-err" marginTop="16">
+          <Label col="0" [text]="ic.clock" class="ic ic-20 ic-danger"></Label>
+          <Label col="1" [text]="cooldownText()" class="banner-text" textWrap="true"></Label>
+        </GridLayout>
       }
       @else if (error()) {
-        <Label [text]="error()" class="error-text" textWrap="true"></Label>
+        <GridLayout columns="auto,*" class="banner banner-err" marginTop="16">
+          <Label col="0" [text]="ic.alertCircle" class="ic ic-20 ic-danger"></Label>
+          <Label col="1" [text]="error()" class="banner-text" textWrap="true"></Label>
+        </GridLayout>
       }
 
       @if (bioAvailable() && bioEnabled()) {
-        <Label text="👆  Unlock with fingerprint" class="bio-btn" (tap)="tryBio()"></Label>
+        <GridLayout columns="auto,*" class="bio-btn" (tap)="tryBio()">
+          <Label col="0" [text]="ic.fingerprint" class="ic ic-22 ic-accent"></Label>
+          <Label col="1" [text]="i18n.t('lock.bio.cta')" class="footnote" marginLeft="10" verticalAlignment="center"></Label>
+        </GridLayout>
       }
 
-      <Label text="Forgot your secret? Reset the vault" class="link center muted-link" (tap)="resetVault()"></Label>
+      <StackLayout orientation="horizontal" class="center" marginTop="22">
+        <Label [text]="i18n.t('lock.forgot')" class="muted-link" verticalAlignment="center"></Label>
+        <Label [text]="' ' + i18n.t('lock.reset')" class="link" verticalAlignment="center" (tap)="resetVault()"></Label>
+      </StackLayout>
 
     </StackLayout>
   </ScrollView>
